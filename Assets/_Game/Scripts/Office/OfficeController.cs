@@ -6,9 +6,6 @@ public class OfficeController : MonoBehaviour
 
     public DeskObject[] deskObjects;
 
-    UIManager _ui;
-    GameStateService _state;
-    DailyChoiceService _choices;
     bool _gameStarted;
 
     void Awake()
@@ -18,12 +15,6 @@ public class OfficeController : MonoBehaviour
 
     void Start()
     {
-        _state = ServiceLocator.Get<GameStateService>();
-        _choices = ServiceLocator.Get<DailyChoiceService>();
-        _ui = UIManager.Instance;
-
-        _state.OnDayChanged += _ => RefreshDesk();
-
         // Hide all desk objects initially and show main menu
         foreach (var obj in deskObjects)
             if (obj != null) obj.SetVisible(false);
@@ -35,84 +26,88 @@ public class OfficeController : MonoBehaviour
     System.Collections.IEnumerator ShowMainMenuDelayed()
     {
         yield return null;
-        _ui.ShowPanel("main-menu-panel");
+        UIManager.Instance.ShowPanel("main-menu-panel");
     }
 
     public void RefreshDesk()
     {
         if (!_gameStarted) return;
-        int day = _state.CurrentDay;
+        var state = ServiceLocator.Get<GameStateService>();
+        int day = state.CurrentDay;
         foreach (var obj in deskObjects)
         {
             if (obj != null)
                 obj.SetVisible(obj.ShouldBeVisible(day));
         }
 
-        // Show day label
         string[] dayNames = { "", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница" };
         if (day >= 1 && day <= 5)
-            _ui.ShowDayLabel($"Неделя {_state.CurrentWeek} — {dayNames[day]}");
+            UIManager.Instance.ShowDayLabel($"Неделя {state.CurrentWeek} — {dayNames[day]}");
         else
-            _ui.HideDayLabel();
+            UIManager.Instance.HideDayLabel();
     }
 
     public void OnGameStarted()
     {
         _gameStarted = true;
+        // Subscribe to day changes on the current state service
+        ServiceLocator.Get<GameStateService>().OnDayChanged += _ => RefreshDesk();
         RefreshDesk();
     }
 
     public void OpenPanel(string panelName)
     {
-        _ui.ShowPanel(panelName);
+        UIManager.Instance.ShowPanel(panelName);
     }
 
     public void TryAdvanceDay()
     {
-        int w = _state.CurrentWeek;
-        int d = _state.CurrentDay;
+        var state = ServiceLocator.Get<GameStateService>();
+        var choices = ServiceLocator.Get<DailyChoiceService>();
+        int w = state.CurrentWeek;
+        int d = state.CurrentDay;
         bool canAdvance = true;
 
         switch (d)
         {
-            case 1: canAdvance = _choices.IsChosen(w, ChoiceType.Contact); break;
-            case 2: canAdvance = _choices.IsChosen(w, ChoiceType.Evidence); break;
-            case 3: canAdvance = _choices.IsChosen(w, ChoiceType.Testimony); break;
-            case 4: canAdvance = _choices.IsChosen(w, ChoiceType.FollowUp); break;
-            case 5: return; // verdict is handled by BriefingUI
+            case 1: canAdvance = choices.IsChosen(w, ChoiceType.Contact); break;
+            case 2: canAdvance = choices.IsChosen(w, ChoiceType.Evidence); break;
+            case 3: canAdvance = choices.IsChosen(w, ChoiceType.Testimony); break;
+            case 4: canAdvance = choices.IsChosen(w, ChoiceType.FollowUp); break;
+            case 5: return;
         }
 
         if (!canAdvance)
         {
-            _ui.ShowHint("Сначала сделайте выбор");
+            UIManager.Instance.ShowHint("Сначала сделайте выбор");
             return;
         }
 
-        _state.AdvanceDay();
+        state.AdvanceDay();
         HandleDayStart();
     }
 
     public void HandleDayStart()
     {
         RefreshDesk();
-        int d = _state.CurrentDay;
-        if (d == 0)
+        var state = ServiceLocator.Get<GameStateService>();
+        if (state.CurrentDay == 0)
         {
-            _ui.ShowPanel("outcome-panel");
+            UIManager.Instance.ShowPanel("outcome-panel");
         }
     }
 
     public void AfterVerdictCommit()
     {
-        _state.AdvanceDay();
-        var cases = ServiceLocator.Get<CaseService>();
-        if (_state.IsGameComplete)
+        var state = ServiceLocator.Get<GameStateService>();
+        state.AdvanceDay();
+        if (state.IsGameComplete)
         {
-            _ui.ShowPanel("ending-panel");
+            UIManager.Instance.ShowPanel("ending-panel");
         }
         else
         {
-            cases.LoadWeek(_state.CurrentWeek);
+            ServiceLocator.Get<CaseService>().LoadWeek(state.CurrentWeek);
             HandleDayStart();
         }
     }
