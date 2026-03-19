@@ -402,6 +402,7 @@ public class SceneSetup : MonoBehaviour
     {
         var audioGo = new GameObject("[ProceduralAudio]");
         audioGo.AddComponent<ProceduralAudio>();
+        audioGo.AddComponent<ProceduralMusic>();
     }
 
     void BuildEvidenceBoard()

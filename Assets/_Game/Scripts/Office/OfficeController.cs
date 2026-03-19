@@ -50,6 +50,13 @@ public class OfficeController : MonoBehaviour
         if (AtmosphereController.Instance != null)
             AtmosphereController.Instance.SetDayLighting(day);
 
+        // Music intensity: calm → building → intense
+        if (ProceduralMusic.Instance != null)
+        {
+            float[] intensity = { 0.2f, 0.3f, 0.4f, 0.5f, 0.7f, 1.0f };
+            ProceduralMusic.Instance.SetIntensity(day >= 0 && day <= 5 ? intensity[day] : 0.5f);
+        }
+
         // Update evidence board
         if (EvidenceBoard.Instance != null)
             EvidenceBoard.Instance.RefreshFromChoices();
@@ -67,6 +74,10 @@ public class OfficeController : MonoBehaviour
 
         // Show controls hint for first-time players
         UIManager.Instance.ShowControlsHint();
+
+        // Start music
+        if (ProceduralMusic.Instance != null)
+            ProceduralMusic.Instance.StartMusic();
     }
 
     public void OpenPanel(string panelName)
