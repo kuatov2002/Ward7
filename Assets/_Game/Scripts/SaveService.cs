@@ -9,7 +9,7 @@ public enum VerdictType { None, Guilty, NotGuilty }
 [Serializable]
 public class DailyChoiceRecord
 {
-    public string suspectId;
+    public int week;
     public ChoiceType choiceType;
     public string selectedId;
 }

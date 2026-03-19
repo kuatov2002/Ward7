@@ -318,8 +318,8 @@ public class GameManager : MonoBehaviour
         GUILayout.Label("CONTACTS (choose one to call):", _headerStyle);
         GUILayout.Space(5);
 
-        bool alreadyChosen = _choices.IsChosen(suspect.suspectId, ChoiceType.Contact);
-        string selectedContact = _choices.GetSelected(suspect.suspectId, ChoiceType.Contact);
+        bool alreadyChosen = _choices.IsChosen(_state.CurrentWeek, ChoiceType.Contact);
+        string selectedContact = _choices.GetSelected(_state.CurrentWeek, ChoiceType.Contact);
 
         foreach (var contact in suspect.contacts)
         {
@@ -338,7 +338,7 @@ public class GameManager : MonoBehaviour
             {
                 if (GUILayout.Button("Call", _smallButtonStyle, GUILayout.Width(120)))
                 {
-                    _choices.Commit(suspect.suspectId, ChoiceType.Contact, contact.contactId);
+                    _choices.Commit(_state.CurrentWeek, ChoiceType.Contact, contact.contactId);
                     _contactResponse = contact.response;
                 }
             }
@@ -375,8 +375,8 @@ public class GameManager : MonoBehaviour
         GUILayout.Label("Review all evidence. Send ONE for detailed expertise.", _textStyle);
         GUILayout.Space(10);
 
-        bool alreadySent = _choices.IsChosen(suspect.suspectId, ChoiceType.Evidence);
-        string selectedEvidence = _choices.GetSelected(suspect.suspectId, ChoiceType.Evidence);
+        bool alreadySent = _choices.IsChosen(_state.CurrentWeek, ChoiceType.Evidence);
+        string selectedEvidence = _choices.GetSelected(_state.CurrentWeek, ChoiceType.Evidence);
 
         _scrollPos = GUILayout.BeginScrollView(_scrollPos);
 
@@ -402,7 +402,7 @@ public class GameManager : MonoBehaviour
                 {
                     if (GUILayout.Button("Send for Expertise", _smallButtonStyle, GUILayout.Width(200)))
                     {
-                        _choices.Commit(suspect.suspectId, ChoiceType.Evidence, ev.evidenceId);
+                        _choices.Commit(_state.CurrentWeek, ChoiceType.Evidence, ev.evidenceId);
                     }
                 }
             }
@@ -435,8 +435,8 @@ public class GameManager : MonoBehaviour
         GUILayout.Label("Three sources. Request clarification from ONE.", _textStyle);
         GUILayout.Space(10);
 
-        bool alreadyRequested = _choices.IsChosen(suspect.suspectId, ChoiceType.Testimony);
-        string selectedWitness = _choices.GetSelected(suspect.suspectId, ChoiceType.Testimony);
+        bool alreadyRequested = _choices.IsChosen(_state.CurrentWeek, ChoiceType.Testimony);
+        string selectedWitness = _choices.GetSelected(_state.CurrentWeek, ChoiceType.Testimony);
 
         _scrollPos = GUILayout.BeginScrollView(_scrollPos);
 
@@ -461,7 +461,7 @@ public class GameManager : MonoBehaviour
                 GUILayout.Space(5);
                 if (GUILayout.Button("Request Clarification", _smallButtonStyle, GUILayout.Width(200)))
                 {
-                    _choices.Commit(suspect.suspectId, ChoiceType.Testimony, t.witnessName);
+                    _choices.Commit(_state.CurrentWeek, ChoiceType.Testimony, t.witnessName);
                 }
             }
 
@@ -491,8 +491,8 @@ public class GameManager : MonoBehaviour
         GUILayout.Label($"THURSDAY - INTERROGATION: {suspect.displayName}", _headerStyle);
         GUILayout.Space(5);
 
-        bool followUpChosen = _choices.IsChosen(suspect.suspectId, ChoiceType.FollowUp);
-        string selectedFollowUp = _choices.GetSelected(suspect.suspectId, ChoiceType.FollowUp);
+        bool followUpChosen = _choices.IsChosen(_state.CurrentWeek, ChoiceType.FollowUp);
+        string selectedFollowUp = _choices.GetSelected(_state.CurrentWeek, ChoiceType.FollowUp);
 
         _scrollPos = GUILayout.BeginScrollView(_scrollPos);
 
@@ -519,7 +519,7 @@ public class GameManager : MonoBehaviour
             bool hasConditional = false;
             foreach (var cq in suspect.conditionalQuestions)
             {
-                string sel = _choices.GetSelected(suspect.suspectId, cq.requiredChoiceType);
+                string sel = _choices.GetSelected(_state.CurrentWeek, cq.requiredChoiceType);
                 if (sel == cq.requiredChoiceId)
                 {
                     if (!hasConditional)
@@ -561,7 +561,7 @@ public class GameManager : MonoBehaviour
                 {
                     if (GUILayout.Button(fu.question, _smallButtonStyle))
                     {
-                        _choices.Commit(suspect.suspectId, ChoiceType.FollowUp, fu.followUpId);
+                        _choices.Commit(_state.CurrentWeek, ChoiceType.FollowUp, fu.followUpId);
                         _selectedFollowUpAnswer = fu.answer;
                     }
                 }
