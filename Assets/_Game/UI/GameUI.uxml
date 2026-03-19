@@ -1,0 +1,28 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <Style src="GameUI.uss" />
+
+    <!-- Fullscreen overlay for panels -->
+    <ui:VisualElement name="overlay" class="overlay hidden">
+        <ui:VisualElement name="main-menu-panel" class="panel panel-fullscreen hidden" />
+        <ui:VisualElement name="outcome-panel" class="panel panel-center hidden" />
+        <ui:VisualElement name="dossier-panel" class="panel panel-scroll hidden" />
+        <ui:VisualElement name="contact-panel" class="panel panel-scroll hidden" />
+        <ui:VisualElement name="evidence-panel" class="panel panel-scroll hidden" />
+        <ui:VisualElement name="testimony-panel" class="panel panel-scroll hidden" />
+        <ui:VisualElement name="interrogation-panel" class="panel panel-scroll hidden" />
+        <ui:VisualElement name="briefing-panel" class="panel panel-center hidden" />
+        <ui:VisualElement name="ending-panel" class="panel panel-scroll hidden" />
+    </ui:VisualElement>
+
+    <!-- Day hint at bottom of screen -->
+    <ui:Label name="day-hint" class="day-hint hidden" />
+
+    <!-- Crosshair -->
+    <ui:VisualElement name="crosshair" class="crosshair">
+        <ui:VisualElement class="crosshair-h" />
+        <ui:VisualElement class="crosshair-v" />
+    </ui:VisualElement>
+
+    <!-- Interaction hint (below crosshair) -->
+    <ui:Label name="interact-hint" class="interact-hint hidden" />
+</ui:UXML>

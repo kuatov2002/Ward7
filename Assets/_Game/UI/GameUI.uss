@@ -1,0 +1,355 @@
+/* ─── ROOT ─── */
+:root {
+    --bg-dark: rgba(18, 18, 22, 0.92);
+    --bg-box: rgba(40, 40, 50, 0.8);
+    --text-main: rgb(218, 218, 218);
+    --text-warm: rgb(230, 217, 178);
+    --text-accent: rgb(255, 200, 100);
+    --text-green: rgb(100, 220, 100);
+    --text-red: rgb(240, 80, 80);
+    --text-cyan: rgb(80, 220, 240);
+    --text-gray: rgb(120, 120, 120);
+    --text-yellow: rgb(240, 220, 80);
+    --btn-bg: rgb(60, 60, 70);
+    --btn-hover: rgb(80, 80, 95);
+    --btn-active: rgb(50, 50, 60);
+    --border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ─── OVERLAY ─── */
+.overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    align-items: center;
+    justify-content: center;
+}
+
+.hidden {
+    display: none;
+}
+
+/* ─── PANELS ─── */
+.panel {
+    background-color: var(--bg-dark);
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 900px;
+    width: 90%;
+    border-width: 1px;
+    border-color: var(--border-color);
+}
+
+.panel-fullscreen {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    border-radius: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.panel-center {
+    max-height: 80%;
+    align-items: center;
+}
+
+.panel-scroll {
+    max-height: 85%;
+    overflow: hidden;
+}
+
+/* ─── SCROLL VIEW ─── */
+.scroll-content {
+    flex-grow: 1;
+    overflow: scroll;
+    max-height: 600px;
+}
+
+.scroll-content ScrollView {
+    flex-grow: 1;
+}
+
+/* ─── TYPOGRAPHY ─── */
+.title {
+    font-size: 32px;
+    -unity-font-style: bold;
+    color: white;
+    -unity-text-align: middle-center;
+    margin-bottom: 10px;
+}
+
+.header {
+    font-size: 20px;
+    -unity-font-style: bold;
+    color: var(--text-warm);
+    white-space: normal;
+    margin-bottom: 5px;
+}
+
+.header-center {
+    font-size: 20px;
+    -unity-font-style: bold;
+    color: var(--text-warm);
+    -unity-text-align: middle-center;
+}
+
+.text {
+    font-size: 15px;
+    color: var(--text-main);
+    white-space: normal;
+    margin-bottom: 3px;
+}
+
+.text-bold {
+    font-size: 15px;
+    color: var(--text-main);
+    -unity-font-style: bold;
+    white-space: normal;
+}
+
+.text-small {
+    font-size: 13px;
+    color: var(--text-main);
+    white-space: normal;
+}
+
+.text-green {
+    color: var(--text-green);
+}
+
+.text-red {
+    color: var(--text-red);
+}
+
+.text-cyan {
+    color: var(--text-cyan);
+}
+
+.text-gray {
+    color: var(--text-gray);
+}
+
+.text-yellow {
+    color: var(--text-yellow);
+}
+
+.text-accent {
+    color: var(--text-accent);
+}
+
+/* ─── BOXES ─── */
+.box {
+    background-color: var(--bg-box);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-width: 1px;
+    border-color: var(--border-color);
+}
+
+/* ─── BUTTONS ─── */
+.btn {
+    height: 40px;
+    font-size: 16px;
+    -unity-font-style: bold;
+    background-color: var(--btn-bg);
+    color: white;
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: var(--border-color);
+    margin-top: 5px;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.btn:hover {
+    background-color: var(--btn-hover);
+}
+
+.btn:active {
+    background-color: var(--btn-active);
+}
+
+.btn-small {
+    height: 32px;
+    font-size: 14px;
+    background-color: var(--btn-bg);
+    color: white;
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: var(--border-color);
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.btn-small:hover {
+    background-color: var(--btn-hover);
+}
+
+.btn-wide {
+    width: 300px;
+    height: 44px;
+    font-size: 18px;
+    -unity-font-style: bold;
+    background-color: var(--btn-bg);
+    color: white;
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: var(--border-color);
+    margin-top: 8px;
+}
+
+.btn-wide:hover {
+    background-color: var(--btn-hover);
+}
+
+/* Verdict buttons */
+.btn-verdict {
+    width: 250px;
+    height: 80px;
+    font-size: 24px;
+    -unity-font-style: bold;
+    background-color: var(--btn-bg);
+    color: white;
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: var(--border-color);
+    margin: 10px;
+}
+
+.btn-verdict:hover {
+    background-color: var(--btn-hover);
+}
+
+.btn-verdict-guilty-selected {
+    background-color: rgba(120, 30, 30, 1);
+    border-color: var(--text-red);
+    color: var(--text-red);
+}
+
+.btn-verdict-not-guilty-selected {
+    background-color: rgba(30, 90, 30, 1);
+    border-color: var(--text-green);
+    color: var(--text-green);
+}
+
+.btn-sign {
+    width: 320px;
+    height: 50px;
+    font-size: 20px;
+    -unity-font-style: bold;
+    background-color: var(--btn-bg);
+    color: white;
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: var(--border-color);
+    margin-top: 20px;
+}
+
+.btn-sign:hover {
+    background-color: var(--btn-hover);
+}
+
+.btn-sign:disabled {
+    opacity: 0.4;
+}
+
+.btn-close {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+    background-color: transparent;
+    color: var(--text-gray);
+    border-width: 0;
+}
+
+.btn-close:hover {
+    color: white;
+}
+
+/* ─── LAYOUT HELPERS ─── */
+.row {
+    flex-direction: row;
+    align-items: center;
+}
+
+.row-center {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.spacer {
+    height: 15px;
+}
+
+.spacer-small {
+    height: 8px;
+}
+
+.spacer-large {
+    height: 30px;
+}
+
+.grow {
+    flex-grow: 1;
+}
+
+/* ─── CROSSHAIR ─── */
+.crosshair {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
+}
+
+.crosshair-h {
+    position: absolute;
+    width: 20px;
+    height: 2px;
+    left: -10px;
+    top: -1px;
+    background-color: rgba(255, 255, 255, 0.6);
+    border-radius: 1px;
+}
+
+.crosshair-v {
+    position: absolute;
+    width: 2px;
+    height: 20px;
+    left: -1px;
+    top: -10px;
+    background-color: rgba(255, 255, 255, 0.6);
+    border-radius: 1px;
+}
+
+/* ─── HINTS ─── */
+.day-hint {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    -unity-text-align: middle-center;
+    font-size: 18px;
+    -unity-font-style: bold;
+    color: var(--text-accent);
+}
+
+.interact-hint {
+    position: absolute;
+    top: 55%;
+    left: 0;
+    right: 0;
+    -unity-text-align: middle-center;
+    font-size: 16px;
+    -unity-font-style: bold;
+    color: rgba(255, 255, 255, 0.8);
+}
