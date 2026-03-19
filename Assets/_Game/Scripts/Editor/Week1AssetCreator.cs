@@ -4,240 +4,215 @@ using UnityEngine;
 
 public static class Week1AssetCreator
 {
-    [MenuItem("Profile7/Create Week 1 - Holloway")]
-    public static void CreateWeek1()
+    [MenuItem("Profile7/Создать Неделю 1 — Холлоуэй")]
+    public static void Create()
     {
         var s = ScriptableObject.CreateInstance<SuspectSO>();
         s.suspectId = "suspect_01";
-        s.displayName = "Mark Holloway";
+        s.displayName = "Марк Холлоуэй";
         s.weekNumber = 1;
-        s.isGuilty = false;
+        s.isGuilty = false; // НЕ ВИНОВЕН — пожар организовал Салас
 
-        // ─── MONDAY: DOSSIER ───
         s.dossierText =
-@"MARK HOLLOWAY, 44 years old. Accused of arson of his own warehouse to collect insurance. One worker — Santiago Gomez, 31 — died in the fire.
+@"Марк Холлоуэй, 44 года. Поджог собственного склада с целью получения страховой выплаты. Один рабочий — Сантьяго Гомес, 31 год — погиб при пожаре.
 
-Holloway was born in Detroit, 1981. First business — an auto repair shop, closed in 2004 after a fire. Insurance payout covered debts. Second business — chemical materials warehouse, opened in 2009 jointly with Victor Salas (50/50 share). Unprofitable until 2022. Sharp revenue growth in 2023 after a municipal contract. Warehouse insured for $2.4 million — twice the appraised value. Reappraisal done in 2021.
+Родился в Детройте, 1981. Первый бизнес — авторемонтная мастерская, закрылась в 2004 после пожара. Страховая выплата полностью покрыла долги. Следствие установило неисправность электропроводки — дело закрыто.
 
-Wife — Linda, teacher. Two children. Church parish, volunteering.
+Второй бизнес — склад химических материалов, открыт в 2009 совместно с Виктором Саласом (доля 50/50). До 2022 убыточен. В 2023 — резкий рост выручки после муниципального контракта.
 
-SANTIAGO GOMEZ. 31 years old. Honduras, 2019. Worked at Holloway's warehouse since 2021. Sole breadwinner. Three children, youngest — eight months old. Unofficial night shifts — paid in cash.";
+Склад застрахован на $2,4 млн — вдвое выше рыночной стоимости. Переоценка проведена в 2021 году. В документах указаны оба совладельца.
 
-        // ─── CONTACTS ───
+Финансовое положение: личный долг Холлоуэя — $180 000 по кредитной линии. Ежемесячный платёж — $4 200. Три платежа на ту же сумму компании «GreenTech Disposal Services» — назначение не установлено.
+
+Партнёрство с Саласом в последний год характеризуется конфликтом — подробности неизвестны.
+
+Жена — Линда, преподаватель. Двое детей. Церковный приход, волонтёрство.
+
+САНТЬЯГО ГОМЕС. 31 год. Гондурас, 2019. Работал на складе с 2021. Единственный кормилец, трое детей, младшему — восемь месяцев. Выходил на неофициальные ночные смены — оплата наличными.";
+
+        // ─── КОНТАКТЫ ───
         s.contacts = new[]
         {
             new ContactData
             {
                 contactId = "contact_linda",
-                displayName = "Linda Holloway (wife)",
-                response = "\"Mark was home after eleven. I heard him come in. These last months he was very tense — the partnership was falling apart. Victor was demanding to buy out his share.\""
+                displayName = "Линда Холлоуэй (жена)",
+                response = "«Марк был дома после одиннадцати. Я слышала как он вошёл. Последние месяцы он был на нервах — партнёрство разваливалось. Виктор требовал выкупить его долю за бесценок. Марк отказывался. Он хотел уйти, а не воевать.»"
             },
             new ContactData
             {
                 contactId = "contact_raul",
-                displayName = "Raul Espinoza (former employee)",
-                response = "\"Holloway was trying to dissolve the partnership. Hired a lawyer back in February. Salas was furious. Three days before the fire they were screaming at each other in the office.\""
+                displayName = "Рауль Эспиноза (бывший сотрудник)",
+                response = "«Я уволился за месяц до пожара. Салас вёл себя странно — стал приезжать на склад по вечерам, хотя раньше не появлялся. За два дня до пожара я видел его машину на парковке склада в десять вечера. Холлоуэй об этом не знал — они к тому моменту почти не разговаривали.»"
             },
             new ContactData
             {
                 contactId = "contact_holm",
-                displayName = "Peter Holm (neighbor)",
-                response = "\"I saw Holloway's car — it left around eleven in the evening. It didn't come back until morning, when the fire department arrived.\""
+                displayName = "Питер Холм (сосед)",
+                response = "«Я видел машину Холлоуэя — она уехала около одиннадцати вечера. Больше не возвращалась. Но знаете что странно — примерно за полчаса до этого подъехала другая машина. Тёмная, я не разглядел марку. Постояла минут двадцать и уехала.»"
             },
             new ContactData
             {
                 contactId = "contact_salas",
-                displayName = "Victor Salas (business partner)",
-                response = "\"Mark threatened me. Said he'd rather burn everything down than give me his share. I thought it was just words. Now I don't know.\""
+                displayName = "Виктор Салас (бизнес-партнёр)",
+                response = "«Марк угрожал мне. Говорил что лучше сожжёт всё чем отдаст мне долю. Я думал это слова. И ещё — он платил какой-то компании, GreenTech. Я случайно увидел выписку. Спросил — он разозлился и сказал чтоб я не лез в его дела.»"
             }
         };
 
-        // ─── TUESDAY: EVIDENCE ───
+        // ─── УЛИКИ ───
         s.evidence = new[]
         {
             new EvidenceData
             {
                 evidenceId = "evidence_accesslog",
-                title = "Warehouse Access Log",
+                title = "Журнал пропусков склада",
                 baseDescription =
-@"Electronic access control system. Records for the night of the fire:
-- Victor Salas: entry 22:45, exit 23:05
-- Mark Holloway: entry 23:14, exit — NOT RECORDED
-- Santiago Gomez: entry 23:47, exit — NOT RECORDED",
+@"Электронная система контроля доступа. Записи за ночь пожара:
+- Виктор Салас: вход 22:45, выход 23:05
+- Марк Холлоуэй: вход 23:14, выход — не зафиксирован
+- Сантьяго Гомес: вход 23:47, выход — не зафиксирован",
                 expertDescription =
-@"Technical analysis of the system revealed a server reboot at 23:10. All events after 22:50 may be incomplete or corrupted. Salas's exit at 23:05 was recorded before the reboot — the only reliable entry. Holloway's and Gomez's exits technically could not have been saved."
+@"Технический анализ: сервер системы контроля перезагружен в 23:10. Все записи после 22:50 могут быть неполными или повреждёнными. Выход Саласа в 23:05 зафиксирован до перезагрузки — единственная достоверная запись. Выходы Холлоуэя и Гомеса технически не могли сохраниться. Запись о входе Холлоуэя в 23:14 сделана после перезагрузки — точность времени не гарантирована."
             },
             new EvidenceData
             {
                 evidenceId = "evidence_firereport",
-                title = "Fire Investigation Report",
-                baseDescription = "Three simultaneous ignition points. Accelerant used. Industrial solvent. Someone knew the layout of the ventilation shafts.",
+                title = "Отчёт пожарной экспертизы",
+                baseDescription = "Три точки возгорания одновременно. Использован ускоритель горения — промышленный растворитель. Поджигатель знал расположение вентиляционных шахт и систему хранения. Профессиональный поджог.",
                 expertDescription =
-@"The substance has been identified as TechSolv-7 — a highly specialized industrial solvent sold only to corporate clients under contract. Registry check: 'Salas Industrial LLC' has been an active client of the TechSolv-7 supplier since 2020. Holloway is NOT listed in the registry."
+@"Растворитель идентифицирован как TechSolv-7 — узкоспециализированный реагент, продаётся только по корпоративным контрактам. Проверка реестра поставщика: ООО «Салас Индастриал» — активный клиент с 2020 года. Холлоуэй в реестре не значится. Склад Холлоуэя не использовал TechSolv-7 в производственных процессах."
             },
             new EvidenceData
             {
                 evidenceId = "evidence_bankstatement",
-                title = "Holloway's Bank Statement",
-                baseDescription = "Three payments of $4,200 to 'GreenTech Disposal Services' over two months. Company registered two months ago. Legal address — a residential building.",
+                title = "Выписка со счёта Холлоуэя",
+                baseDescription = "Три платежа по $4 200 компании «GreenTech Disposal Services» за два месяца. Компания зарегистрирована два месяца назад. Юридический адрес — жилой дом. Договоров на оказание услуг не обнаружено.",
                 expertDescription =
-@"'GreenTech' is a shell company with no real activity. Director — Karl Reed, who previously worked as a lawyer at Victor Salas's company. Payments were disguised as legal services — but not a single contract exists. Possible blackmail: Reed may have had compromising information on Holloway (the 2004 incident)."
+@"«GreenTech» — номинальная компания без деятельности. Директор — Карл Рид, ранее работал юристом в компании Виктора Саласа. Рид уволен Саласом за полгода до регистрации GreenTech. Схема: Рид предположительно использует информацию о пожаре 2004 года для шантажа Холлоуэя. Связь Рида с Саласом может указывать на координированное давление."
             }
         };
 
-        // ─── WEDNESDAY: TESTIMONIES ───
+        // ─── ПОКАЗАНИЯ ───
         s.testimonies = new[]
         {
             new TestimonyData
             {
-                witnessName = "Cole (Senior Investigator)",
-                baseTestimony = "\"Motive is obvious: double insurance, collapsing partnership, precedent in 2004. Access log confirms Holloway's presence. Absence of an exit record speaks for itself.\"",
-                clarification = "\"I checked GreenTech. Shell company with no contracts. If these are legal expenses — where's the contract? This looks like blackmail. Someone knew about 2004 and had Holloway by the throat.\""
+                witnessName = "Коул (старший следователь)",
+                baseTestimony = "«Два пожара за двадцать лет — это паттерн. Страховка вдвое выше стоимости, долг $180 000, ежемесячный платёж совпадает с суммой GreenTech. Журнал подтверждает присутствие. Отсутствие записи о выходе говорит само за себя.»",
+                clarification = "«Я копнул GreenTech. Платежи $4 200 — ровно сумма ежемесячного долга Холлоуэя. Это не юридические расходы — нет ни одного договора. Кто-то снимал с него деньги. Шантаж. Вопрос — за что и кто стоит за этой компанией.»"
             },
             new TestimonyData
             {
-                witnessName = "Paige (Expert Analyst)",
-                baseTestimony = "\"Three ignition points — arson. Someone knew the ventilation shaft layout. The log shows two people without exit records. Physically, both could have been in the warehouse at the time of the fire.\"",
-                clarification = "\"I rechecked the log. The server was rebooted at 23:10. All exits after 22:50 are technically unreliable. The only confirmed fact — Salas exited before the reboot. Everything else is a data gap, not proof of presence.\""
+                witnessName = "Пэйдж (эксперт-аналитик)",
+                baseTestimony = "«Три точки возгорания — поджог. Два человека без записи о выходе — оба физически могли быть на складе в момент пожара. Алиби Холлоуэя подтверждается только показаниями жены. Жена не является независимым свидетелем — её слова не верифицируемы.»",
+                clarification = "«Перепроверила журнал. Сервер перезагружен в 23:10 — все данные после этого момента ненадёжны. Салас вышел до перезагрузки — это факт. Пожар начался в 01:30 — через два часа после последней записи. За это время на склад мог войти кто угодно без фиксации.»"
             },
             new TestimonyData
             {
-                witnessName = "Nash (Field Agent)",
-                baseTestimony = "\"Salas filed for forced dissolution of the partnership two days before the fire. Under the terms of the agreement — if one partner is convicted of a criminal offense, his share automatically transfers to the other. Holloway apparently didn't know about this.\"",
-                clarification = "\"I pulled Gomez's phone records. A week before the fire — seven calls to Salas. Gomez wasn't just working for Holloway. He was Salas's informant inside the warehouse. He knew the schedule, knew who comes at night.\""
+                witnessName = "Нэш (полевой агент)",
+                baseTestimony = "«Салас подал заявление о принудительном расторжении партнёрства за два дня до пожара. По условиям договора — при осуждении одного партнёра его доля автоматически переходит другому. Отдельно: телефонные записи Гомеса за последнюю неделю содержат необъяснимую активность — проверяю.»",
+                clarification = "«Проверил. Семь звонков Саласу за последнюю неделю. Гомес не просто работал у Холлоуэя — он был информатором Саласа внутри склада. Знал расписание, знал кто приходит ночью. Салас знал что Гомес будет там.»"
             }
         };
 
-        // ─── THURSDAY: INTERROGATION ───
+        // ─── ДОПРОС ───
         s.standardQuestions = new[]
         {
             new InterrogationQA
             {
-                question = "Where were you on the night of the fire?",
-                answer = "\"At the warehouse until about eleven — checking documents for the lawyer. Then home. Wife heard me come in. Found out about the fire from the firefighters around 2 AM.\""
+                question = "Где вы были в ночь пожара?",
+                answer = "«На складе до одиннадцати — проверял документы для адвоката. Потом домой. Жена не спала, мы поговорили. Узнал о пожаре от пожарных около двух ночи.»"
             },
             new InterrogationQA
             {
-                question = "You knew the insurance was twice the appraised value?",
-                answer = "\"The reappraisal was in 2021. Victor himself suggested it — said it's standard practice during expansion.\""
+                question = "Склад застрахован вдвое выше стоимости. Это ваша инициатива?",
+                answer = "«Переоценку делали в 2021-м. Мы с Виктором оба подписали. Я не помню кто предложил первым. Это стандартная практика при расширении.»"
             },
             new InterrogationQA
             {
-                question = "GreenTech Disposal payments — what are those?",
-                answer = "\"Legal expenses. I'm dissolving the partnership with Salas. The lawyer works through that company.\""
+                question = "У вас долг $180 000. Страховая выплата покрыла бы его полностью?",
+                answer = "«Да, и что? У меня работающий бизнес. Муниципальный контракт. Зачем мне сжигать то что наконец приносит деньги?»"
             },
             new InterrogationQA
             {
-                question = "Did you know Gomez would be at the warehouse that night?",
-                answer = "\"No. He wasn't on the schedule. This haunts me.\" (Pause. Stares at the table.)"
+                question = "Вы знали что Гомес будет на складе той ночью?",
+                answer = "«Нет. Его не было в расписании. У него трое детей.» (Замолкает.)"
             }
         };
 
         s.conditionalQuestions = new[]
         {
-            new ConditionalInterrogationQA
-            {
-                requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_linda",
-                question = "Your wife says Victor was demanding your share. Why didn't you say this earlier?",
-                answer = "\"Because it looks like a motive. But my motive was to leave, not to burn. I wanted to sell my share — Victor refused to pay market price.\""
-            },
-            new ConditionalInterrogationQA
-            {
-                requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_raul",
-                question = "You hired a lawyer in February to dissolve the partnership. Why hide it?",
-                answer = "\"I wasn't hiding it. Just didn't say right away. It's a civil matter, not criminal. I wanted to leave legally.\""
-            },
-            new ConditionalInterrogationQA
-            {
-                requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_holm",
-                question = "Neighbor saw your car leaving around 23:00. Access log shows your entry at 23:14. How did you leave before you entered?",
-                answer = "(Pause. Looks away.) \"I... don't know how their system works. Maybe I entered again — forgot something in the office, it happens. Or the neighbor got the time wrong. Was he looking at a clock?\""
-            },
-            new ConditionalInterrogationQA
-            {
-                requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_salas",
-                question = "Salas says you threatened to burn the warehouse. Is that true?",
-                answer = "(Long pause. Looks straight ahead.) \"I said: 'I'd rather burn everything than give it to you for nothing.' It was said in anger. I'm not an arsonist.\""
-            },
-            new ConditionalInterrogationQA
-            {
-                requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_accesslog",
-                question = "The access system was rebooted at 23:10. Your exit technically couldn't have been saved. Did you know this?",
-                answer = "\"No. But that explains why there's no record. I left before the reboot — or around that time. Exactly then.\""
-            },
-            new ConditionalInterrogationQA
-            {
-                requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_firereport",
-                question = "TechSolv-7 is only sold to corporate clients. Only Salas is in the registry. How did this substance end up at your warehouse?",
-                answer = "(Pause. Holloway goes pale.) \"I... didn't buy that substance. If it was there — Victor brought it. He had access. He left at 23:05.\""
-            },
-            new ConditionalInterrogationQA
-            {
-                requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_bankstatement",
-                question = "GreenTech is linked to Salas's lawyer. Were you paying a blackmailer or hiring him against Salas?",
-                answer = "(Silence. Then quietly.) \"Karl Reed knew about 2004. Knew details that could destroy me. Victor apparently found him and... yes. I was paying. But that doesn't make me an arsonist.\""
-            },
-            new ConditionalInterrogationQA
-            {
-                requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Cole (Senior Investigator)",
-                question = "Cole thinks GreenTech is blackmail. Who was blackmailing you and why?",
-                answer = "(Long pause.) \"Someone who knew what happened in 2004. The details. I thought it was over. It wasn't.\""
-            },
-            new ConditionalInterrogationQA
-            {
-                requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Paige (Expert Analyst)",
-                question = "Paige confirms: the log is unreliable after 22:50. No proof you were there when the fire started at 01:30. Where were you between 23:14 and 2 AM?",
-                answer = "\"Home. Wife heard me. I went to bed around midnight. That's an hour and a half between me leaving and the fire. Someone set it after me.\""
-            },
-            new ConditionalInterrogationQA
-            {
-                requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Nash (Field Agent)",
-                question = "Gomez called Salas seven times the week before the fire. Did you know your worker was working for your partner?",
-                answer = "(Stands up. Sits back down.) \"What? No. Gomez... Gomez was a good man. If Victor used him as an informant — he knew Gomez would be there that night. He knew.\" (Voice breaks.)"
-            }
+            new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_linda",
+                question = "Ваша жена говорит Виктор требовал вашу долю за бесценок. Почему не упомянули?",
+                answer = "«Потому что это выглядит как мотив. Но мой мотив был уйти, а не сжигать. Я хотел продать свою долю — Виктор отказывался платить рыночную цену.»" },
+
+            new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_raul",
+                question = "Бывший сотрудник видел машину Саласа на парковке склада за два дня до пожара. Поздно вечером. Знали об этом?",
+                answer = "(Пауза.) «Нет. Виктор имел право приезжать — это его склад тоже. Но... зачем ночью? Мы к тому моменту почти не разговаривали.» (Задумывается.)" },
+
+            new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_holm",
+                question = "Сосед видел вашу машину уезжающей в 23:00. И ещё одну тёмную машину за полчаса до вас. Знаете чья?",
+                answer = "«Тёмная машина? Нет... Подождите. У Виктора тёмно-синий BMW. Но я его не видел той ночью — я приехал позже.»" },
+
+            new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_salas",
+                question = "Салас говорит вы угрожали сжечь склад. Это было?",
+                answer = "(Долгая пауза. Смотрит прямо.) «Я сказал: 'Лучше сожгу всё чем отдам тебе за бесценок.' В запале. Люди говорят всякое когда злятся. Я не поджигатель.»" },
+
+            new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_accesslog",
+                question = "Система перезагрузилась в 23:10. Ваш выход не мог сохраниться. Знали об этом?",
+                answer = "«Нет. Но это объясняет почему нет записи. Я ушёл до перезагрузки — или в это время.»" },
+
+            new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_firereport",
+                question = "TechSolv-7 продаётся только корпоративным клиентам. В реестре — только Салас. Откуда это вещество на вашем складе?",
+                answer = "(Бледнеет.) «Я не покупал это вещество. Если оно там было — его принёс Виктор. У него был доступ. Он ушёл в 23:05.»" },
+
+            new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_bankstatement",
+                question = "GreenTech связана с бывшим юристом Саласа. Вы платили шантажисту?",
+                answer = "(Молчание. Потом тихо.) «Карл Рид знал про 2004 год. Подробности которые могли меня уничтожить. Виктор видимо нашёл его и... да. Я платил. Но это не делает меня поджигателем.»" },
+
+            new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Коул (старший следователь)",
+                question = "Коул считает GreenTech — шантаж. Кто вас шантажировал и за что?",
+                answer = "(Долгая пауза.) «Человек который знал детали 2004 года. Я думал это закончилось. Не закончилось.»" },
+
+            new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Пэйдж (эксперт-аналитик)",
+                question = "Пэйдж подтверждает: журнал ненадёжен после 22:50. Пожар в 01:30. Где вы были с одиннадцати до двух ночи?",
+                answer = "«Дома. Жена слышала. Я лёг около полуночи. Полтора часа между моим уходом и пожаром. Кто-то поджёг после меня.»" },
+
+            new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Нэш (полевой агент)",
+                question = "Гомес звонил Саласу семь раз за неделю до пожара. Вы знали что ваш рабочий работал на партнёра?",
+                answer = "(Встаёт. Садится обратно.) «Нет. Гомес был хорошим человеком. Если Виктор использовал его как информатора — он знал что Гомес будет там. Он знал.» (Голос ломается.)" }
         };
 
-        // Follow-up questions
         s.followUps = new[]
         {
-            new FollowUpData
-            {
-                followUpId = "followup_benefit",
-                question = "Who really benefits from your conviction?",
-                answer = "\"Victor. If I'm convicted — my share goes to him automatically. That clause was in the partnership agreement. I only found out about it from my lawyer... after the fire.\" (Quiet, bitter laugh.)"
-            },
-            new FollowUpData
-            {
-                followUpId = "followup_2004",
-                question = "What really happened in 2004?",
-                answer = "\"The auto shop... the wiring was old. Insurance ruled it accidental. But someone always thought otherwise. Karl Reed found the original inspection report — the one that was never filed. He's been using it ever since.\""
-            },
-            new FollowUpData
-            {
-                followUpId = "followup_gomez",
-                question = "If you could say one thing to Gomez's family, what would it be?",
-                answer = "(Long silence. Eyes fill with tears.) \"That I'm sorry. That he shouldn't have been there. That someone put him in danger knowingly. And it wasn't me.\" (Looks away. Interview over.)"
-            }
+            new FollowUpData { followUpId = "fu_benefit",
+                question = "Кому выгоден ваш приговор?",
+                answer = "«Виктору. При осуждении — моя доля автоматически переходит ему. Это условие в договоре. Я узнал об этом от адвоката уже после пожара.» (Горький смех.)" },
+            new FollowUpData { followUpId = "fu_2004",
+                question = "Что на самом деле произошло в 2004?",
+                answer = "«В мастерской была старая проводка. Эксперт подтвердил — короткое замыкание. Дело закрыто. Но Рид нашёл черновик первичного осмотра — который не вошёл в итоговое заключение. Там были вопросы. Он этим и пользовался.»" },
+            new FollowUpData { followUpId = "fu_gomez",
+                question = "Что бы вы сказали семье Гомеса?",
+                answer = "(Долгое молчание. Глаза наполняются слезами.) «Что мне жаль. Что его не должно было быть там. Что кто-то сознательно подверг его опасности. И это был не я.» (Отворачивается.)" }
         };
 
-        // ─── CONSEQUENCES ───
-        s.consequenceGuilty = "Mark Holloway was sentenced to 12 years. Victor Salas assumed full ownership of the business within 48 hours of the verdict. Linda Holloway filed an appeal. The investigation into Salas for arson was closed due to insufficient evidence.";
-        s.consequenceNotGuilty = "The investigation shifted to Victor Salas. TechSolv-7 purchases made a week before the fire were discovered. Karl Reed cooperated with the investigation. The case was referred to the prosecutor's office.";
+        s.consequenceGuilty = "Марк Холлоуэй приговорён к 12 годам. Виктор Салас вступил в права на бизнес через 48 часов после приговора. Линда Холлоуэй подала апелляцию. Расследование в отношении Саласа прекращено за недостаточностью доказательств.";
+        s.consequenceNotGuilty = "Следствие переключилось на Виктора Саласа. Обнаружены закупки TechSolv-7 за неделю до пожара. Карл Рид пошёл на сотрудничество со следствием. Дело передано в прокуратуру.";
 
-        // Save asset
+        SaveAsset(s, "suspect_01_holloway");
+    }
+
+    static void SaveAsset(SuspectSO s, string filename)
+    {
         const string folder = "Assets/Resources/Suspects";
         if (!AssetDatabase.IsValidFolder("Assets/Resources"))
             AssetDatabase.CreateFolder("Assets", "Resources");
         if (!AssetDatabase.IsValidFolder(folder))
             AssetDatabase.CreateFolder("Assets/Resources", "Suspects");
-
-        AssetDatabase.CreateAsset(s, $"{folder}/suspect_01_holloway.asset");
+        AssetDatabase.CreateAsset(s, folder + "/" + filename + ".asset");
         AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
-
-        EditorUtility.FocusProjectWindow();
         Selection.activeObject = s;
-        Debug.Log("Week 1 (Holloway) asset created at " + folder);
+        Debug.Log("Создан: " + folder + "/" + filename + ".asset");
     }
 }
 #endif
