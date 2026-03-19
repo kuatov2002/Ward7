@@ -4,13 +4,15 @@ using UnityEngine.UIElements;
 
 /// <summary>
 /// Mini-game: inspect evidence zones. Limited clicks reveal details.
+/// Enhanced with reveal animations, hover preview, and critical fact effects.
 /// </summary>
 public class EvidenceInspectUI : MonoBehaviour, IPanelController
 {
-    const string PanelName = "evidence-inspect-panel"; // matches UXML name
+    const string PanelName = "evidence-inspect-panel";
     int _currentEvIdx;
     readonly HashSet<string> _inspected = new();
     int _inspectionsLeft;
+    string _lastRevealedZone;  // Track for animation
 
     void Start()
     {
@@ -20,6 +22,7 @@ public class EvidenceInspectUI : MonoBehaviour, IPanelController
     public void OnShow()
     {
         _currentEvIdx = 0;
+        _lastRevealedZone = null;
         LoadInspected();
         ShowCurrentEvidence();
     }
@@ -42,7 +45,6 @@ public class EvidenceInspectUI : MonoBehaviour, IPanelController
         var s = cases.ActiveCase;
         if (s == null || s.evidence == null || _currentEvIdx >= s.evidence.Length)
         {
-            // Done inspecting all evidence — go to evidence selection
             var save = ServiceLocator.Get<SaveService>();
             save.Data.evidenceInspectCompleted = true;
             save.Save();
@@ -53,12 +55,22 @@ public class EvidenceInspectUI : MonoBehaviour, IPanelController
 
         var ev = s.evidence[_currentEvIdx];
 
-        // Count remaining inspections for this evidence
+        // Count remaining inspections
         int used = 0;
+        int criticalFound = 0;
+        int criticalTotal = 0;
         if (ev.zones != null)
         {
             for (int i = 0; i < ev.zones.Length; i++)
-                if (_inspected.Contains($"{ev.evidenceId}:{i}")) used++;
+            {
+                bool revealed = _inspected.Contains($"{ev.evidenceId}:{i}");
+                if (revealed) used++;
+                if (ev.zones[i].isCritical)
+                {
+                    criticalTotal++;
+                    if (revealed) criticalFound++;
+                }
+            }
         }
         _inspectionsLeft = ev.maxInspections - used;
 
@@ -66,10 +78,36 @@ public class EvidenceInspectUI : MonoBehaviour, IPanelController
         title.AddToClassList("header");
         panel.Add(title);
 
-        var sub = new Label($"Кликните на зоны для осмотра. Осталось осмотров: {_inspectionsLeft}");
-        sub.AddToClassList("text");
-        sub.AddToClassList("text-amber");
-        panel.Add(sub);
+        // ─── Status row ───
+        var statusRow = new VisualElement();
+        statusRow.style.flexDirection = FlexDirection.Row;
+        statusRow.style.justifyContent = Justify.SpaceBetween;
+        statusRow.style.marginBottom = 6;
+
+        var inspLbl = new Label($"Осталось осмотров: {_inspectionsLeft}");
+        inspLbl.AddToClassList("text");
+        inspLbl.style.color = _inspectionsLeft > 1
+            ? new Color(1f, 0.7f, 0f)
+            : _inspectionsLeft == 1
+                ? new Color(1f, 0.4f, 0.2f)
+                : new Color(0.5f, 0.3f, 0.3f);
+        statusRow.Add(inspLbl);
+
+        // Critical facts counter (without spoiling which ones)
+        if (criticalTotal > 0)
+        {
+            var critLbl = new Label($"Ключевых фактов: {criticalFound}/{criticalTotal}");
+            critLbl.AddToClassList("text-small");
+            critLbl.style.color = criticalFound == criticalTotal
+                ? new Color(0.3f, 0.9f, 0.3f)
+                : new Color(0.6f, 0.6f, 0.4f);
+            statusRow.Add(critLbl);
+
+            if (criticalFound == criticalTotal && criticalTotal > 0)
+                UIAnimations.Pulse(critLbl, 2, 400);
+        }
+
+        panel.Add(statusRow);
 
         var progress = new Label($"Улика {_currentEvIdx + 1} из {s.evidence.Length}");
         progress.AddToClassList("text-small");
@@ -86,7 +124,6 @@ public class EvidenceInspectUI : MonoBehaviour, IPanelController
         }
         else
         {
-            // Grid of zones
             var grid = new VisualElement();
             grid.style.flexDirection = FlexDirection.Row;
             grid.style.flexWrap = Wrap.Wrap;
@@ -98,6 +135,7 @@ public class EvidenceInspectUI : MonoBehaviour, IPanelController
                 string zoneKey = $"{ev.evidenceId}:{i}";
                 bool revealed = _inspected.Contains(zoneKey);
                 int zi = i;
+                bool justRevealed = _lastRevealedZone == zoneKey;
 
                 var zoneEl = new VisualElement();
                 zoneEl.AddToClassList("inspect-zone");
@@ -109,13 +147,22 @@ public class EvidenceInspectUI : MonoBehaviour, IPanelController
                     detailLbl.AddToClassList("text-small");
                     detailLbl.style.whiteSpace = WhiteSpace.Normal;
                     zoneEl.Add(detailLbl);
+
                     if (zone.isCritical)
                     {
                         var tag = new Label("[КЛЮЧЕВОЙ ФАКТ]");
                         tag.AddToClassList("text-small");
                         tag.AddToClassList("text-green");
                         zoneEl.Add(tag);
+
+                        // Pulse critical facts
+                        if (justRevealed)
+                            UIAnimations.Pulse(tag, 3, 300);
                     }
+
+                    // Animate the just-revealed zone
+                    if (justRevealed)
+                        UIAnimations.ScaleIn(zoneEl, 350);
                 }
                 else
                 {
@@ -124,6 +171,17 @@ public class EvidenceInspectUI : MonoBehaviour, IPanelController
                     btn.AddToClassList("inspect-zone-btn");
                     btn.SetEnabled(_inspectionsLeft > 0);
                     zoneEl.Add(btn);
+
+                    // Hover highlight
+                    if (_inspectionsLeft > 0)
+                    {
+                        btn.RegisterCallback<MouseEnterEvent>(evt => {
+                            zoneEl.style.backgroundColor = new Color(0.15f, 0.3f, 0.15f, 0.9f);
+                        });
+                        btn.RegisterCallback<MouseLeaveEvent>(evt => {
+                            zoneEl.style.backgroundColor = new Color(0.06f, 0.12f, 0.06f, 0.9f);
+                        });
+                    }
                 }
 
                 grid.Add(zoneEl);
@@ -134,7 +192,28 @@ public class EvidenceInspectUI : MonoBehaviour, IPanelController
 
         panel.Add(Spacer(10));
 
-        var nextBtn = new Button(() => { _currentEvIdx++; ShowCurrentEvidence(); });
+        // ─── Inspection budget visual ───
+        if (ev.maxInspections > 0)
+        {
+            var budgetRow = new VisualElement();
+            budgetRow.style.flexDirection = FlexDirection.Row;
+            budgetRow.style.justifyContent = Justify.Center;
+            budgetRow.style.marginBottom = 8;
+
+            for (int i = 0; i < ev.maxInspections; i++)
+            {
+                var pip = new Label("\u25CF");
+                pip.style.fontSize = 12;
+                pip.style.marginRight = 4;
+                pip.style.color = i < used
+                    ? new Color(0.3f, 0.3f, 0.3f)  // used — dim
+                    : new Color(1f, 0.7f, 0f);       // remaining — bright
+                budgetRow.Add(pip);
+            }
+            panel.Add(budgetRow);
+        }
+
+        var nextBtn = new Button(() => { _currentEvIdx++; _lastRevealedZone = null; ShowCurrentEvidence(); });
         nextBtn.text = _currentEvIdx < s.evidence.Length - 1 ? "СЛЕДУЮЩАЯ УЛИКА" : "ЗАВЕРШИТЬ ОСМОТР";
         nextBtn.AddToClassList("btn-wide");
         panel.Add(nextBtn);
@@ -147,12 +226,21 @@ public class EvidenceInspectUI : MonoBehaviour, IPanelController
 
         _inspected.Add(key);
         _inspectionsLeft--;
+        _lastRevealedZone = key;
 
         var save = ServiceLocator.Get<SaveService>();
         save.Data.inspectedZones.Add(key);
         save.Save();
 
-        if (ProceduralAudio.Instance != null) ProceduralAudio.Instance.PlayPaperFlip();
+        // Different sounds for critical vs normal
+        if (ev.zones[zoneIdx].isCritical)
+        {
+            if (ProceduralAudio.Instance != null) ProceduralAudio.Instance.PlayStamp();
+        }
+        else
+        {
+            if (ProceduralAudio.Instance != null) ProceduralAudio.Instance.PlayPaperFlip();
+        }
 
         // Add critical zone facts as notes
         if (ev.zones[zoneIdx].isCritical)

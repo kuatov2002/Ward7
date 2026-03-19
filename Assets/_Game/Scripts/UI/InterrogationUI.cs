@@ -5,6 +5,8 @@ public class InterrogationUI : MonoBehaviour, IPanelController
 {
     const string PanelName = "interrogation-panel";
     float _savedScroll;
+    string _lastToneChosen;      // track last tone for reaction text
+    int _lastPressureChange;
 
     void Start()
     {
@@ -41,7 +43,7 @@ public class InterrogationUI : MonoBehaviour, IPanelController
         title.AddToClassList("header");
         panel.Add(title);
 
-        // ─── PRESSURE BAR ───
+        // ─── PRESSURE BAR with animated fill ───
         if (s.pressureThreshold > 0)
         {
             panel.Add(Spacer(5));
@@ -53,15 +55,16 @@ public class InterrogationUI : MonoBehaviour, IPanelController
 
             var barBg = new VisualElement();
             barBg.style.width = 200;
-            barBg.style.height = 12;
+            barBg.style.height = 14;
             barBg.style.backgroundColor = new Color(0.2f, 0.2f, 0.25f);
             barBg.style.borderTopLeftRadius = barBg.style.borderTopRightRadius =
                 barBg.style.borderBottomLeftRadius = barBg.style.borderBottomRightRadius = 4;
 
             float pct = Mathf.Clamp01((float)pressure.CurrentPressure / s.pressureThreshold);
             var barFill = new VisualElement();
+            barFill.name = "pressure-fill";
             barFill.style.width = Length.Percent(pct * 100f);
-            barFill.style.height = 12;
+            barFill.style.height = 14;
             barFill.style.backgroundColor = pct < 0.6f
                 ? new Color(0.3f, 0.7f, 0.3f)
                 : pct < 0.85f
@@ -71,12 +74,69 @@ public class InterrogationUI : MonoBehaviour, IPanelController
                 barFill.style.borderBottomLeftRadius = barFill.style.borderBottomRightRadius = 4;
             barBg.Add(barFill);
             pressureRow.Add(barBg);
+
+            // Pressure value display
+            var pressVal = new Label($" {pressure.CurrentPressure}/{s.pressureThreshold}");
+            pressVal.AddToClassList("text-small");
+            pressVal.style.color = pct < 0.6f
+                ? new Color(0.5f, 0.8f, 0.5f)
+                : pct < 0.85f
+                    ? new Color(0.8f, 0.6f, 0.2f)
+                    : new Color(0.9f, 0.3f, 0.3f);
+            pressureRow.Add(pressVal);
+
             panel.Add(pressureRow);
+
+            // Shake pressure bar when critical
+            if (pct >= 0.85f)
+                UIAnimations.Shake(barBg, 3f, 500);
 
             var pressExplain = new Label("Чем выше давление — тем больше шанс что подозреваемый замкнётся и откажется отвечать.");
             pressExplain.AddToClassList("text-small");
             pressExplain.AddToClassList("text-dim");
             panel.Add(pressExplain);
+        }
+
+        // ─── SUSPECT REACTION ───
+        if (_lastToneChosen != null)
+        {
+            panel.Add(Spacer(5));
+            var reactionBox = new VisualElement();
+            reactionBox.AddToClassList("box");
+            reactionBox.style.borderLeftWidth = 3;
+
+            string reactionEmoji, reactionText;
+            Color reactionColor;
+
+            switch (_lastToneChosen)
+            {
+                case "press":
+                    reactionEmoji = "[!]";
+                    reactionText = _lastPressureChange >= 2
+                        ? "Подозреваемый напрягся, отводит взгляд..."
+                        : "Подозреваемый нервничает...";
+                    reactionColor = new Color(0.9f, 0.3f, 0.3f);
+                    break;
+                case "empathy":
+                    reactionEmoji = "[\u2665]";
+                    reactionText = "Подозреваемый немного расслабился, готов говорить...";
+                    reactionColor = new Color(0.3f, 0.8f, 0.4f);
+                    break;
+                default:
+                    reactionEmoji = "[\u2014]";
+                    reactionText = "Подозреваемый спокоен, ожидает следующий вопрос...";
+                    reactionColor = new Color(0.6f, 0.6f, 0.7f);
+                    break;
+            }
+
+            reactionBox.style.borderLeftColor = reactionColor;
+            var reactionLabel = new Label($"{reactionEmoji} {reactionText}");
+            reactionLabel.AddToClassList("text");
+            reactionLabel.style.color = reactionColor;
+            reactionLabel.style.unityFontStyleAndWeight = FontStyle.Italic;
+            reactionBox.Add(reactionLabel);
+            panel.Add(reactionBox);
+            UIAnimations.FadeIn(reactionBox, 400);
         }
 
         bool shutdown = pressure.IsShutdown(s.pressureThreshold);
@@ -174,6 +234,14 @@ public class InterrogationUI : MonoBehaviour, IPanelController
                     topicLbl.style.marginBottom = 6;
                     box.Add(topicLbl);
 
+                    // Investigator thought hint
+                    var thoughtLbl = new Label("Выберите тон вопроса...");
+                    thoughtLbl.AddToClassList("text-small");
+                    thoughtLbl.style.color = new Color(0.4f, 0.6f, 0.8f);
+                    thoughtLbl.style.unityFontStyleAndWeight = FontStyle.Italic;
+                    thoughtLbl.style.marginBottom = 6;
+                    box.Add(thoughtLbl);
+
                     var btnRow = new VisualElement();
                     btnRow.style.flexDirection = FlexDirection.Row;
                     btnRow.style.justifyContent = Justify.SpaceBetween;
@@ -199,6 +267,9 @@ public class InterrogationUI : MonoBehaviour, IPanelController
                     btnRow.Add(empathyBtn);
 
                     box.Add(btnRow);
+
+                    // Animate the unanswered question entrance
+                    UIAnimations.FadeIn(box, 300);
                 }
 
                 scroll.Add(box);
@@ -245,6 +316,7 @@ public class InterrogationUI : MonoBehaviour, IPanelController
                         AddPressureTag(box, cq.pressureChange);
 
                     scroll.Add(box);
+                    UIAnimations.SlideInLeft(box, 250);
                 }
             }
         }
@@ -300,7 +372,17 @@ public class InterrogationUI : MonoBehaviour, IPanelController
                         choices.Commit(w, ChoiceType.Bluff, bluffId);
                         bool success = choices.GetSelected(w, bq.requiredChoiceType) == bq.requiredChoiceId;
                         pressure.AddPressure(bq.pressureChange);
-                        if (!success) pressure.SetBluffFailed();
+                        if (!success)
+                        {
+                            pressure.SetBluffFailed();
+                            // Flash red on bluff fail
+                            UIAnimations.FlashBorder(box, new Color(1f, 0.2f, 0.2f), 600);
+                            UIAnimations.Shake(box, 10f, 400);
+                        }
+                        else
+                        {
+                            UIAnimations.FlashBorder(box, new Color(0.3f, 0.9f, 0.3f), 500);
+                        }
                         OnShow();
                     });
                     btn.text = bq.question;
@@ -392,6 +474,9 @@ public class InterrogationUI : MonoBehaviour, IPanelController
 
     void CommitTone(int index, string tone, int pressureChange, SaveService save, PressureService pressure)
     {
+        _lastToneChosen = tone;
+        _lastPressureChange = pressureChange;
+
         save.Data.chosenTones.Add($"{index}:{tone}");
         save.Save();
         pressure.AddPressure(pressureChange);
@@ -400,7 +485,10 @@ public class InterrogationUI : MonoBehaviour, IPanelController
         OnShow();
     }
 
-    public void OnHide() { }
+    public void OnHide()
+    {
+        _lastToneChosen = null;
+    }
 
     static void AddPressureTag(VisualElement box, int change)
     {

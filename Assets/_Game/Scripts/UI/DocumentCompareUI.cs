@@ -4,12 +4,14 @@ using UnityEngine.UIElements;
 
 /// <summary>
 /// Mini-game: two documents side by side, find discrepancies.
+/// Enhanced with hover highlighting, mark animations, and result animations.
 /// </summary>
 public class DocumentCompareUI : MonoBehaviour, IPanelController
 {
     const string PanelName = "doccompare-panel";
     readonly HashSet<int> _marked = new();
     bool _submitted;
+    int _hoveredRow = -1;
 
     void Start()
     {
@@ -20,6 +22,7 @@ public class DocumentCompareUI : MonoBehaviour, IPanelController
     {
         _marked.Clear();
         _submitted = false;
+        _hoveredRow = -1;
         Build();
     }
 
@@ -33,7 +36,6 @@ public class DocumentCompareUI : MonoBehaviour, IPanelController
         var s = cases.ActiveCase;
         if (s == null || s.documentCompare == null || s.documentCompare.lines == null)
         {
-            // No document compare data — skip to dossier
             UIManager.Instance.HideAllPanels();
             UIManager.Instance.ShowPanel("dossier-panel");
             return;
@@ -92,7 +94,6 @@ public class DocumentCompareUI : MonoBehaviour, IPanelController
 
             if (_submitted)
             {
-                // Show results
                 bool wasMarked = marked;
                 bool correct = wasMarked && line.isDiscrepancy;
                 bool missed = !wasMarked && line.isDiscrepancy;
@@ -104,10 +105,25 @@ public class DocumentCompareUI : MonoBehaviour, IPanelController
                     : new Color(0.03f, 0.06f, 0.03f);
                 row.style.backgroundColor = bg;
 
+                // Result icon
+                string icon = correct ? "[OK]" : missed ? "[!!]" : falseAlarm ? "[X]" : "";
+                if (!string.IsNullOrEmpty(icon))
+                {
+                    var iconLbl = new Label(icon);
+                    iconLbl.style.width = 30;
+                    iconLbl.AddToClassList("text-small");
+                    iconLbl.style.color = correct ? new Color(0.3f, 0.9f, 0.3f) :
+                        missed ? new Color(0.9f, 0.3f, 0.3f) : new Color(0.9f, 0.7f, 0.2f);
+                    row.Add(iconLbl);
+                }
+
                 string leftColor = line.isDiscrepancy ? "text-red" : "text-green";
-                AddLineCell(row, line.leftText, leftColor, 48);
+                AddLineCell(row, line.leftText, leftColor, 45);
                 AddSpacer(row, 4);
-                AddLineCell(row, line.rightText, leftColor, 48);
+                AddLineCell(row, line.rightText, leftColor, 45);
+
+                // Staggered result animation
+                UIAnimations.FadeIn(row, 100 + i * 50);
             }
             else
             {
@@ -117,17 +133,56 @@ public class DocumentCompareUI : MonoBehaviour, IPanelController
                 row.style.borderLeftWidth = marked ? 3 : 0;
                 row.style.borderLeftColor = new Color(1f, 0.6f, 0.2f);
 
+                // Hover effect — highlight both sides simultaneously
+                row.RegisterCallback<MouseEnterEvent>(evt => {
+                    if (_submitted) return;
+                    _hoveredRow = idx;
+                    row.style.backgroundColor = marked
+                        ? new Color(0.3f, 0.2f, 0.08f)
+                        : new Color(0.08f, 0.12f, 0.08f);
+                    row.style.borderRightWidth = 1;
+                    row.style.borderRightColor = new Color(0.5f, 0.5f, 0.3f);
+                });
+                row.RegisterCallback<MouseLeaveEvent>(evt => {
+                    if (_submitted) return;
+                    _hoveredRow = -1;
+                    row.style.backgroundColor = marked
+                        ? new Color(0.25f, 0.15f, 0.05f)
+                        : new Color(0.03f, 0.06f, 0.03f);
+                    row.style.borderRightWidth = 0;
+                });
+
                 row.RegisterCallback<ClickEvent>(evt => {
                     if (_submitted) return;
-                    if (_marked.Contains(idx)) _marked.Remove(idx);
-                    else _marked.Add(idx);
+                    if (_marked.Contains(idx))
+                    {
+                        _marked.Remove(idx);
+                        // Unmark animation
+                        row.style.borderLeftWidth = 0;
+                    }
+                    else
+                    {
+                        _marked.Add(idx);
+                        // Mark animation - flash
+                        UIAnimations.FlashBorder(row, new Color(1f, 0.8f, 0.2f), 300);
+                    }
                     if (ProceduralAudio.Instance != null) ProceduralAudio.Instance.PlayPaperFlip();
                     Build();
                 });
 
-                AddLineCell(row, line.leftText, "text", 48);
-                AddSpacer(row, 4);
-                AddLineCell(row, line.rightText, "text", 48);
+                // Mark indicator
+                if (marked)
+                {
+                    var markIcon = new Label("[*]");
+                    markIcon.style.width = 24;
+                    markIcon.AddToClassList("text-small");
+                    markIcon.style.color = new Color(1f, 0.6f, 0.2f);
+                    row.Add(markIcon);
+                }
+
+                AddLineCell(row, line.leftText, "text", marked ? 45 : 48);
+                AddSpacer(row, marked ? 3 : 4);
+                AddLineCell(row, line.rightText, "text", marked ? 45 : 48);
             }
 
             scroll.Add(row);
@@ -138,7 +193,6 @@ public class DocumentCompareUI : MonoBehaviour, IPanelController
 
         if (_submitted)
         {
-            // Show results summary
             int correct = 0, missed = 0, falseAlarm = 0;
             var save = ServiceLocator.Get<SaveService>();
             var notes = ServiceLocator.Get<NoteService>();
@@ -169,7 +223,21 @@ public class DocumentCompareUI : MonoBehaviour, IPanelController
             resultLabel.AddToClassList("text");
             resultLabel.AddToClassList(correct == total ? "text-green" : "text-yellow");
             resultLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+            resultLabel.style.fontSize = 16;
             panel.Add(resultLabel);
+            UIAnimations.ScaleIn(resultLabel, 400);
+
+            // Perfect score celebration
+            if (correct == total && falseAlarm == 0)
+            {
+                panel.Add(Spacer(5));
+                var perfectLbl = new Label("БЕЗУПРЕЧНЫЙ АНАЛИЗ!");
+                perfectLbl.AddToClassList("text-bold");
+                perfectLbl.style.color = new Color(1f, 0.8f, 0.2f);
+                perfectLbl.style.unityTextAlign = TextAnchor.MiddleCenter;
+                panel.Add(perfectLbl);
+                UIAnimations.Pulse(perfectLbl, 3, 400);
+            }
 
             panel.Add(Spacer(10));
 
@@ -183,7 +251,7 @@ public class DocumentCompareUI : MonoBehaviour, IPanelController
         }
         else
         {
-            var markedCount = new Label($"Отмечено: {_marked.Count}");
+            var markedCount = new Label($"Отмечено расхождений: {_marked.Count}");
             markedCount.AddToClassList("text");
             markedCount.style.unityTextAlign = TextAnchor.MiddleCenter;
             panel.Add(markedCount);

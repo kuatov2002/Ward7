@@ -650,6 +650,47 @@
     opacity: 0.3;
 }
 
+/* ─── STREAK COUNTER ─── */
+.streak-label {
+    font-size: 18px;
+    -unity-font-style: bold;
+    color: rgb(255, 200, 50);
+    -unity-text-align: middle-center;
+    letter-spacing: 2px;
+}
+
+/* ─── SUSPECT REACTION ─── */
+.reaction-box {
+    padding: 6px 10px;
+    margin-bottom: 6px;
+    border-left-width: 3px;
+}
+
+/* ─── DOSSIER TABS ─── */
+.tab-active {
+    background-color: rgba(15, 30, 15, 0.9);
+    border-bottom-width: 2px;
+    border-bottom-color: var(--text-amber);
+    color: var(--text-amber);
+}
+
+.tab-inactive {
+    opacity: 0.5;
+}
+
+/* ─── WITNESS COLORS ─── */
+.witness-blue {
+    border-left-color: rgb(80, 150, 230);
+}
+
+.witness-orange {
+    border-left-color: rgb(230, 150, 50);
+}
+
+.witness-purple {
+    border-left-color: rgb(150, 80, 200);
+}
+
 /* ─── SCROLLBAR ─── */
 Scroller {
     width: 8px;

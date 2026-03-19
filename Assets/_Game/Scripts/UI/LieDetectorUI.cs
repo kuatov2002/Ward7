@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 /// <summary>
-/// Mini-game: testimony lines appear one by one. Press LIE when you spot a falsehood.
+/// Mini-game: testimony lines appear one by one with typewriter effect.
+/// Press LIE when you spot a falsehood. Streak bonus for consecutive catches.
 /// </summary>
 public class LieDetectorUI : MonoBehaviour, IPanelController
 {
@@ -20,6 +21,10 @@ public class LieDetectorUI : MonoBehaviour, IPanelController
     readonly List<int> _caughtLies = new();
     float _lineTimer;
     bool _liePressed;
+    int _streak;
+    bool _typewriterDone;
+    Coroutine _typewriterCo;
+    VisualElement _currentLineBox;
 
     void Start()
     {
@@ -36,6 +41,8 @@ public class LieDetectorUI : MonoBehaviour, IPanelController
         _running = false;
         _finished = false;
         _liePressed = false;
+        _streak = 0;
+        _typewriterDone = false;
         UIManager.Instance.ShowPanel(PanelName);
     }
 
@@ -50,6 +57,8 @@ public class LieDetectorUI : MonoBehaviour, IPanelController
         _currentLine = 0;
         _lineTimer = LineDisplayTime;
         _liePressed = false;
+        _streak = 0;
+        _typewriterDone = false;
         BuildActive();
     }
 
@@ -59,13 +68,28 @@ public class LieDetectorUI : MonoBehaviour, IPanelController
 
         _lineTimer -= Time.deltaTime;
         if (_lineTimer <= 0f)
-        {
-            // Time's up for this line
             AdvanceLine();
-        }
 
-        // Update timer bar visually
         UpdateTimerBar();
+
+        // Heartbeat tick — accelerates as timer runs out
+        UpdateHeartbeat();
+    }
+
+    float _heartbeatTimer;
+
+    void UpdateHeartbeat()
+    {
+        float pct = Mathf.Clamp01(_lineTimer / LineDisplayTime);
+        // Tick interval: 0.8s at start → 0.2s near end
+        float interval = Mathf.Lerp(0.2f, 0.8f, pct);
+        _heartbeatTimer -= Time.deltaTime;
+        if (_heartbeatTimer <= 0f)
+        {
+            if (ProceduralAudio.Instance != null)
+                ProceduralAudio.Instance.PlayClockTick();
+            _heartbeatTimer = interval;
+        }
     }
 
     void BuildActive()
@@ -86,7 +110,7 @@ public class LieDetectorUI : MonoBehaviour, IPanelController
         title.AddToClassList("header");
         panel.Add(title);
 
-        // Trust bar
+        // ─── Trust bar ───
         var trustRow = new VisualElement();
         trustRow.AddToClassList("row");
         var trustLbl = new Label("Доверие: ");
@@ -102,16 +126,30 @@ public class LieDetectorUI : MonoBehaviour, IPanelController
         }
         panel.Add(trustRow);
 
-        // Timer bar
+        // ─── Streak counter ───
+        if (_streak > 1)
+        {
+            var streakRow = new VisualElement();
+            streakRow.AddToClassList("row");
+            var streakLbl = new Label($"СЕРИЯ: {_streak}x");
+            streakLbl.AddToClassList("text-bold");
+            streakLbl.style.color = new Color(1f, 0.8f, 0.2f);
+            streakLbl.style.fontSize = 16;
+            streakRow.Add(streakLbl);
+            panel.Add(streakRow);
+            UIAnimations.Pulse(streakLbl, 2, 300);
+        }
+
+        // ─── Timer bar ───
         var timerBg = new VisualElement();
         timerBg.name = "lie-timer-bg";
-        timerBg.style.height = 4;
+        timerBg.style.height = 6;
         timerBg.style.backgroundColor = new Color(0.15f, 0.15f, 0.2f);
         timerBg.style.marginTop = 5;
         timerBg.style.marginBottom = 10;
         var timerFill = new VisualElement();
         timerFill.name = "lie-timer-fill";
-        timerFill.style.height = 4;
+        timerFill.style.height = 6;
         timerFill.style.width = Length.Percent(100);
         timerFill.style.backgroundColor = new Color(0.3f, 0.7f, 0.3f);
         timerBg.Add(timerFill);
@@ -125,22 +163,30 @@ public class LieDetectorUI : MonoBehaviour, IPanelController
 
         panel.Add(Spacer(15));
 
-        // Current line — large text
-        var lineBox = new VisualElement();
-        lineBox.AddToClassList("box");
-        lineBox.style.minHeight = 80;
-        lineBox.style.justifyContent = Justify.Center;
-        var lineLbl = new Label(line.text);
+        // ─── Current line — typewriter effect ───
+        _currentLineBox = new VisualElement();
+        _currentLineBox.AddToClassList("box");
+        _currentLineBox.style.minHeight = 80;
+        _currentLineBox.style.justifyContent = Justify.Center;
+        var lineLbl = new Label("");
         lineLbl.AddToClassList("text");
         lineLbl.style.fontSize = 16;
         lineLbl.style.unityTextAlign = TextAnchor.MiddleCenter;
         lineLbl.style.whiteSpace = WhiteSpace.Normal;
-        lineBox.Add(lineLbl);
-        panel.Add(lineBox);
+        _currentLineBox.Add(lineLbl);
+        panel.Add(_currentLineBox);
+
+        // Typewriter effect for the testimony line
+        _typewriterDone = false;
+        if (_typewriterCo != null) StopCoroutine(_typewriterCo);
+        _typewriterCo = StartCoroutine(TypewriterThenDone(lineLbl, line.text));
+
+        // Fade in the line box
+        UIAnimations.FadeIn(_currentLineBox, 200);
 
         panel.Add(Spacer(15));
 
-        // LIE button
+        // ─── LIE button ───
         var lieBtn = new Button(() => OnLiePressed());
         lieBtn.text = "ЛОЖЬ!";
         lieBtn.AddToClassList("lie-btn");
@@ -173,12 +219,22 @@ public class LieDetectorUI : MonoBehaviour, IPanelController
         if (line.isLie)
         {
             _caughtLies.Add(_currentLine);
+            _streak++;
             if (ProceduralAudio.Instance != null) ProceduralAudio.Instance.PlayPaperFlip();
+
+            // Flash the line box green on correct catch
+            if (_currentLineBox != null)
+                UIAnimations.FlashBorder(_currentLineBox, new Color(0.3f, 0.9f, 0.3f), 500);
         }
         else
         {
             _trust--;
+            _streak = 0;
             if (ProceduralAudio.Instance != null) ProceduralAudio.Instance.PlayStamp();
+
+            // Shake the panel on wrong accusation
+            if (_currentLineBox != null)
+                UIAnimations.Shake(_currentLineBox, 8f, 350);
         }
 
         // Brief pause then advance
@@ -187,7 +243,6 @@ public class LieDetectorUI : MonoBehaviour, IPanelController
 
     IEnumerator DelayedAdvance(float delay)
     {
-        // Show result briefly
         BuildActive();
         yield return new WaitForSeconds(delay);
         AdvanceLine();
@@ -198,6 +253,7 @@ public class LieDetectorUI : MonoBehaviour, IPanelController
         _currentLine++;
         _liePressed = false;
         _lineTimer = LineDisplayTime;
+        _heartbeatTimer = 0f;
 
         if (_currentLine >= _lines.Length || _trust <= 0)
         {
@@ -217,9 +273,20 @@ public class LieDetectorUI : MonoBehaviour, IPanelController
         {
             float pct = Mathf.Clamp01(_lineTimer / LineDisplayTime) * 100f;
             fill.style.width = Length.Percent(pct);
-            fill.style.backgroundColor = pct > 50 ? new Color(0.3f, 0.7f, 0.3f)
-                : pct > 25 ? new Color(0.7f, 0.6f, 0.2f)
-                : new Color(0.8f, 0.2f, 0.2f);
+
+            // Color: green → yellow → red with pulse near end
+            Color barColor;
+            if (pct > 50)
+                barColor = new Color(0.3f, 0.7f, 0.3f);
+            else if (pct > 25)
+                barColor = new Color(0.7f, 0.6f, 0.2f);
+            else
+            {
+                // Pulse effect when low
+                float pulse = Mathf.Abs(Mathf.Sin(Time.time * 6f));
+                barColor = Color.Lerp(new Color(0.5f, 0.1f, 0.1f), new Color(0.9f, 0.2f, 0.2f), pulse);
+            }
+            fill.style.backgroundColor = barColor;
         }
     }
 
@@ -252,6 +319,7 @@ public class LieDetectorUI : MonoBehaviour, IPanelController
             warn.AddToClassList("text");
             warn.AddToClassList("text-red");
             panel.Add(warn);
+            UIAnimations.Shake(warn, 4f, 400);
         }
 
         int totalLies = 0;
@@ -261,13 +329,32 @@ public class LieDetectorUI : MonoBehaviour, IPanelController
         result.AddToClassList("text");
         result.AddToClassList(_caughtLies.Count == totalLies ? "text-green" : "text-yellow");
         result.style.unityTextAlign = TextAnchor.MiddleCenter;
+        result.style.fontSize = 18;
         panel.Add(result);
+        UIAnimations.ScaleIn(result, 400);
+
+        // Best streak info
+        if (_streak > 1 || _caughtLies.Count == totalLies)
+        {
+            panel.Add(Spacer(5));
+            string perfText = _caughtLies.Count == totalLies
+                ? "ИДЕАЛЬНЫЙ РЕЗУЛЬТАТ!"
+                : $"Лучшая серия: {_streak}x";
+            var perfLbl = new Label(perfText);
+            perfLbl.AddToClassList("text-bold");
+            perfLbl.style.color = new Color(1f, 0.8f, 0.2f);
+            perfLbl.style.unityTextAlign = TextAnchor.MiddleCenter;
+            panel.Add(perfLbl);
+            if (_caughtLies.Count == totalLies)
+                UIAnimations.Pulse(perfLbl, 3, 400);
+        }
 
         if (_caughtLies.Count > 0)
         {
             panel.Add(Spacer(8));
-            foreach (int li in _caughtLies)
+            for (int i = 0; i < _caughtLies.Count; i++)
             {
+                int li = _caughtLies[i];
                 var box = new VisualElement();
                 box.AddToClassList("box");
                 box.style.borderLeftWidth = 3;
@@ -280,6 +367,9 @@ public class LieDetectorUI : MonoBehaviour, IPanelController
                 reason.AddToClassList("text-small");
                 box.Add(reason);
                 panel.Add(box);
+
+                // Staggered slide-in for each result
+                UIAnimations.SlideInLeft(box, 200 + i * 80);
             }
         }
 
@@ -294,9 +384,16 @@ public class LieDetectorUI : MonoBehaviour, IPanelController
         panel.Add(continueBtn);
     }
 
+    IEnumerator TypewriterThenDone(Label label, string text)
+    {
+        yield return TypewriterEffect.Run(label, text, 0.02f, true);
+        _typewriterDone = true;
+    }
+
     public void OnHide()
     {
         _running = false;
+        if (_typewriterCo != null) StopCoroutine(_typewriterCo);
     }
 
     static VisualElement Spacer(int h = 10)
