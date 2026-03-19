@@ -14,22 +14,9 @@ public class ConsequenceService
 
     public void Schedule(string suspectId, VerdictType verdict, int currentWeek, SuspectSO suspect)
     {
-        bool correct = (verdict == VerdictType.Guilty && suspect.isGuilty)
-                     || (verdict == VerdictType.NotGuilty && !suspect.isGuilty);
-
-        string headline;
-        if (correct)
-        {
-            // Correct verdict = silence or neutral
-            headline = "";
-        }
-        else
-        {
-            // Wrong verdict = consequence
-            headline = verdict == VerdictType.Guilty
-                ? suspect.consequenceGuilty
-                : suspect.consequenceNotGuilty;
-        }
+        string headline = verdict == VerdictType.Guilty
+            ? suspect.consequenceGuilty
+            : suspect.consequenceNotGuilty;
 
         if (string.IsNullOrEmpty(headline))
             return;

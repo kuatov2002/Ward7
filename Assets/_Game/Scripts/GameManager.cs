@@ -442,16 +442,20 @@ public class GameManager : MonoBehaviour
         GUILayout.Space(20);
         GUILayout.BeginHorizontal(); GUILayout.FlexibleSpace();
         var cur = _verdicts.GetVerdict();
-        var defaultColor = GUI.skin.button.normal.textColor;
+
+        bool isG = cur == VerdictType.Guilty;
+        bool isNG = cur == VerdictType.NotGuilty;
 
         var gStyle = new GUIStyle(_buttonStyle) { fontSize = 24, fixedHeight = 80, fixedWidth = 250, fontStyle = FontStyle.Bold };
-        gStyle.normal.textColor = cur == VerdictType.Guilty ? Color.red : defaultColor;
+        SetAllStatesColor(gStyle, isG ? Color.red : Color.white);
+        if (isG) SetAllStatesBg(gStyle, MakeTex(2, 2, new Color(0.4f, 0.1f, 0.1f, 1f)));
         if (GUILayout.Button("ВИНОВЕН", gStyle)) { _verdicts.SetVerdict(VerdictType.Guilty); _verdictChosen = true; }
 
         GUILayout.Space(40);
 
         var ngStyle = new GUIStyle(_buttonStyle) { fontSize = 24, fixedHeight = 80, fixedWidth = 250, fontStyle = FontStyle.Bold };
-        ngStyle.normal.textColor = cur == VerdictType.NotGuilty ? Color.green : defaultColor;
+        SetAllStatesColor(ngStyle, isNG ? Color.green : Color.white);
+        if (isNG) SetAllStatesBg(ngStyle, MakeTex(2, 2, new Color(0.1f, 0.35f, 0.1f, 1f)));
         if (GUILayout.Button("НЕ ВИНОВЕН", ngStyle)) { _verdicts.SetVerdict(VerdictType.NotGuilty); _verdictChosen = true; }
         GUILayout.FlexibleSpace(); GUILayout.EndHorizontal();
         GUILayout.Space(40);
@@ -489,7 +493,7 @@ public class GameManager : MonoBehaviour
             GUILayout.BeginVertical(_boxStyle);
             GUILayout.Label($"Неделя {v.week}: {name}", new GUIStyle(_textStyle) { fontStyle = FontStyle.Bold, fontSize = 16 });
             GUILayout.Label($"Вердикт: {vStr}", new GUIStyle(_textStyle) { normal = { textColor = correct ? Color.green : Color.red } });
-            if (!correct && suspect != null)
+            if (suspect != null)
             {
                 string c = v.verdict == VerdictType.Guilty ? suspect.consequenceGuilty : suspect.consequenceNotGuilty;
                 if (!string.IsNullOrEmpty(c)) { GUILayout.Space(3); GUILayout.Label(c, _textStyle); }
@@ -500,5 +504,32 @@ public class GameManager : MonoBehaviour
         GUILayout.EndScrollView();
         GUILayout.Space(20);
         if (GUILayout.Button("ГЛАВНОЕ МЕНЮ", _buttonStyle)) _screen = GameScreen.MainMenu;
+    }
+
+    // ─── HELPERS ───
+    static void SetAllStatesColor(GUIStyle s, Color c)
+    {
+        s.normal.textColor = c;
+        s.hover.textColor = c;
+        s.active.textColor = c;
+        s.focused.textColor = c;
+    }
+
+    static void SetAllStatesBg(GUIStyle s, Texture2D tex)
+    {
+        s.normal.background = tex;
+        s.hover.background = tex;
+        s.active.background = tex;
+        s.focused.background = tex;
+    }
+
+    static Texture2D MakeTex(int w, int h, Color col)
+    {
+        var pix = new Color[w * h];
+        for (int i = 0; i < pix.Length; i++) pix[i] = col;
+        var t = new Texture2D(w, h);
+        t.SetPixels(pix);
+        t.Apply();
+        return t;
     }
 }
