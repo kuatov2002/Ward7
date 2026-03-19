@@ -112,7 +112,21 @@ public class UIManager : MonoBehaviour
         SetInteractionLocked(false);
     }
 
+    // Panels that should NOT be closeable by Escape/RMB
+    static readonly HashSet<string> _uncloseable = new() {
+        "main-menu-panel", "outcome-panel", "briefing-panel", "ending-panel"
+    };
+
     public bool IsPanelOpen => _activePanel != null;
+
+    void Update()
+    {
+        if (_activePanel == null) return;
+        if (_uncloseable.Contains(_activePanel)) return;
+
+        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
+            HideAllPanels();
+    }
 
     public void ShowInteractHint(string objectName)
     {

@@ -20,11 +20,14 @@ public class DossierUI : MonoBehaviour, IPanelController
         var s = cases.ActiveCase;
         if (s == null) return;
 
-        // Close button
+        // Close row
+        var closeRow = new VisualElement();
+        closeRow.AddToClassList("close-row");
         var closeBtn = new Button(() => UIManager.Instance.HideAllPanels());
-        closeBtn.text = "X";
+        closeBtn.text = "\u2715";
         closeBtn.AddToClassList("btn-close");
-        panel.Add(closeBtn);
+        closeRow.Add(closeBtn);
+        panel.Add(closeRow);
 
         var title = new Label($"ДОСЬЕ: {s.displayName}");
         title.AddToClassList("header");

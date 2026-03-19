@@ -23,10 +23,13 @@ public class EvidenceUI : MonoBehaviour, IPanelController
         if (s == null) return;
         int w = state.CurrentWeek;
 
+        var closeRow = new VisualElement();
+        closeRow.AddToClassList("close-row");
         var closeBtn = new Button(() => UIManager.Instance.HideAllPanels());
-        closeBtn.text = "X";
+        closeBtn.text = "\u2715";
         closeBtn.AddToClassList("btn-close");
-        panel.Add(closeBtn);
+        closeRow.Add(closeBtn);
+        panel.Add(closeRow);
 
         var title = new Label($"УЛИКИ: {s.displayName}");
         title.AddToClassList("header");

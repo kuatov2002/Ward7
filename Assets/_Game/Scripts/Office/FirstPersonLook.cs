@@ -43,11 +43,5 @@ public class FirstPersonLook : MonoBehaviour
         _pitch = Mathf.Clamp(_pitch - my, minPitch, maxPitch);
 
         transform.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
-
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
     }
 }
