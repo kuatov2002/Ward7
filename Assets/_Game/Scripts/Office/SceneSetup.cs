@@ -144,10 +144,10 @@ public class SceneSetup : MonoBehaviour
         }
 
         // ─── DESK LAMP (physical object, not the light) ───
-        Cyl("LampBase", new Vector3(-0.7f, 0.76f, 0.85f), new Vector3(0.1f, 0.02f, 0.1f), Metal);
-        Cyl("LampArm", new Vector3(-0.7f, 0.93f, 0.85f), new Vector3(0.015f, 0.15f, 0.015f), Metal);
+        Cyl("LampBase", new Vector3(-0.7f, 0.76f, 1f), new Vector3(0.1f, 0.02f, 0.1f), Metal);
+        Cyl("LampArm", new Vector3(-0.7f, 0.93f, 1f), new Vector3(0.015f, 0.15f, 0.015f), Metal);
         // Lamp shade (cone-like: wide cube on top)
-        Box("LampShade", new Vector3(-0.7f, 1.1f, 0.85f), new Vector3(0.16f, 0.08f, 0.12f), new Color(0.25f, 0.2f, 0.1f));
+        Box("LampShade", new Vector3(-0.7f, 1.1f, 1f), new Vector3(0.16f, 0.08f, 0.12f), new Color(0.25f, 0.2f, 0.1f));
 
         // ─── TRASH CAN under desk ───
         Cyl("TrashCan", new Vector3(0.8f, 0.15f, 0.3f), new Vector3(0.12f, 0.15f, 0.12f), Metal);
