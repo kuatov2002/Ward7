@@ -52,8 +52,9 @@ public class SaveData
     public bool bluffFailed;
     public List<string> foundConnections = new(); // "cardA|cardB" pairs
     public int connectionAttemptsUsed;
-    public List<string> foundContradictions = new(); // "entryA|entryB"
+    public List<string> foundContradictions = new();
     public int contradictionAttemptsUsed;
+    public List<string> chosenTones = new(); // "0:press", "1:neutral", "2:empathy"
 }
 
 public class SaveService

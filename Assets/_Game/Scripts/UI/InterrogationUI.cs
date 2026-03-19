@@ -79,44 +79,119 @@ public class InterrogationUI : MonoBehaviour, IPanelController
         scroll.style.maxHeight = 500;
         scroll.style.flexGrow = 1;
 
-        // ─── STANDARD QUESTIONS ───
-        var stdHeader = new Label("СТАНДАРТНЫЕ ВОПРОСЫ:");
+        // ─── TONED QUESTIONS ───
+        var stdHeader = new Label("ДОПРОС:");
         stdHeader.AddToClassList("text-bold");
         scroll.Add(stdHeader);
         scroll.Add(Spacer(5));
 
-        if (s.standardQuestions != null)
+        var save = ServiceLocator.Get<SaveService>();
+
+        if (s.tonedQuestions != null)
         {
-            foreach (var qa in s.standardQuestions)
+            for (int i = 0; i < s.tonedQuestions.Length; i++)
             {
+                var tq = s.tonedQuestions[i];
+                string toneKey = $"{i}:";
+                string chosenTone = null;
+                foreach (var ct in save.Data.chosenTones)
+                {
+                    if (ct.StartsWith(toneKey))
+                    {
+                        chosenTone = ct.Substring(toneKey.Length);
+                        break;
+                    }
+                }
+
                 var box = new VisualElement();
                 box.AddToClassList("box");
 
-                if (shutdown)
+                if (shutdown && chosenTone == null)
                 {
-                    var q = new Label($"\u2014 {qa.question}");
-                    q.AddToClassList("text");
-                    q.AddToClassList("text-gray");
-                    box.Add(q);
+                    var topicLbl = new Label(tq.topic);
+                    topicLbl.AddToClassList("text");
+                    topicLbl.AddToClassList("text-gray");
+                    box.Add(topicLbl);
                     var refused = new Label("(Подозреваемый отказывается отвечать)");
                     refused.AddToClassList("text");
                     refused.AddToClassList("text-red");
                     box.Add(refused);
                 }
+                else if (chosenTone != null)
+                {
+                    // Already answered — show result
+                    string question, answer;
+                    string toneClass;
+                    string toneIcon;
+                    switch (chosenTone)
+                    {
+                        case "press":
+                            question = tq.questionPress; answer = tq.answerPress;
+                            toneClass = "tone-press"; toneIcon = "!";
+                            break;
+                        case "empathy":
+                            question = tq.questionEmpathy; answer = tq.answerEmpathy;
+                            toneClass = "tone-empathy"; toneIcon = "\u2665";
+                            break;
+                        default:
+                            question = tq.questionNeutral; answer = tq.answerNeutral;
+                            toneClass = "tone-neutral"; toneIcon = "\u2014";
+                            break;
+                    }
+
+                    box.AddToClassList(toneClass);
+
+                    var topicLbl = new Label($"[{toneIcon}] {tq.topic}");
+                    topicLbl.AddToClassList("text-small");
+                    topicLbl.AddToClassList("text-dim");
+                    box.Add(topicLbl);
+
+                    var qLbl = new Label(question);
+                    qLbl.AddToClassList("text-bold");
+                    box.Add(qLbl);
+                    box.Add(Spacer(3));
+
+                    var aLbl = new Label(answer);
+                    aLbl.AddToClassList("text");
+                    MakeNoteable(aLbl, answer, "interrogation", w, notes);
+                    box.Add(aLbl);
+                }
                 else
                 {
-                    var q = new Label($"\u2014 {qa.question}");
-                    q.AddToClassList("text-bold");
-                    box.Add(q);
-                    box.Add(Spacer(3));
-                    var a = new Label(qa.answer);
-                    a.AddToClassList("text");
-                    MakeNoteable(a, qa.answer, "interrogation", w, notes);
-                    box.Add(a);
+                    // Not yet answered — show topic + 3 tone buttons
+                    var topicLbl = new Label(tq.topic);
+                    topicLbl.AddToClassList("text-bold");
+                    topicLbl.style.fontSize = 16;
+                    topicLbl.style.marginBottom = 6;
+                    box.Add(topicLbl);
 
-                    if (qa.pressureChange != 0)
-                        AddPressureTag(box, qa.pressureChange);
+                    var btnRow = new VisualElement();
+                    btnRow.style.flexDirection = FlexDirection.Row;
+                    btnRow.style.justifyContent = Justify.SpaceBetween;
+
+                    int idx = i;
+
+                    var pressBtn = new Button(() => CommitTone(idx, "press", tq.pressurePress, save, pressure));
+                    pressBtn.text = "! ДАВИТЬ";
+                    pressBtn.AddToClassList("btn-tone");
+                    pressBtn.AddToClassList("btn-tone-press");
+                    btnRow.Add(pressBtn);
+
+                    var neutralBtn = new Button(() => CommitTone(idx, "neutral", tq.pressureNeutral, save, pressure));
+                    neutralBtn.text = "\u2014 НЕЙТРАЛЬНО";
+                    neutralBtn.AddToClassList("btn-tone");
+                    neutralBtn.AddToClassList("btn-tone-neutral");
+                    btnRow.Add(neutralBtn);
+
+                    var empathyBtn = new Button(() => CommitTone(idx, "empathy", tq.pressureEmpathy, save, pressure));
+                    empathyBtn.text = "\u2665 СОЧУВСТВИЕ";
+                    empathyBtn.AddToClassList("btn-tone");
+                    empathyBtn.AddToClassList("btn-tone-empathy");
+                    btnRow.Add(empathyBtn);
+
+                    box.Add(btnRow);
                 }
+
                 scroll.Add(box);
             }
         }
@@ -289,6 +364,16 @@ public class InterrogationUI : MonoBehaviour, IPanelController
         }
 
         panel.Add(scroll);
+    }
+
+    void CommitTone(int index, string tone, int pressureChange, SaveService save, PressureService pressure)
+    {
+        save.Data.chosenTones.Add($"{index}:{tone}");
+        save.Save();
+        pressure.AddPressure(pressureChange);
+        if (ProceduralAudio.Instance != null)
+            ProceduralAudio.Instance.PlayPaperFlip();
+        OnShow();
     }
 
     public void OnHide() { }

@@ -37,6 +37,7 @@ public class PressureService
         _save.Data.connectionAttemptsUsed = 0;
         _save.Data.foundContradictions.Clear();
         _save.Data.contradictionAttemptsUsed = 0;
+        _save.Data.chosenTones.Clear();
         _save.Save();
     }
 }

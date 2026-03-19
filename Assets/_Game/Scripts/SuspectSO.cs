@@ -20,7 +20,7 @@ public class SuspectSO : ScriptableObject
     public ContradictionData[] contradictions;
 
     [Header("Thursday - Interrogation")]
-    public InterrogationQA[] standardQuestions;
+    public TonedQuestionData[] tonedQuestions;
     public ConditionalInterrogationQA[] conditionalQuestions;
     public BluffQuestionData[] bluffQuestions;
     public FollowUpData[] followUps;
@@ -78,6 +78,21 @@ public class FollowUpData
     public string followUpId;
     [TextArea(2, 5)] public string question;
     [TextArea(3, 10)] public string answer;
+}
+
+[System.Serializable]
+public class TonedQuestionData
+{
+    public string topic;
+    [TextArea(1, 3)] public string questionPress;
+    [TextArea(2, 10)] public string answerPress;
+    public int pressurePress = 2;
+    [TextArea(1, 3)] public string questionNeutral;
+    [TextArea(2, 10)] public string answerNeutral;
+    public int pressureNeutral = 0;
+    [TextArea(1, 3)] public string questionEmpathy;
+    [TextArea(2, 10)] public string answerEmpathy;
+    public int pressureEmpathy = -1;
 }
 
 [System.Serializable]

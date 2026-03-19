@@ -420,6 +420,68 @@
 /* ═══════════════════════════════════════
    TIMELINE
    ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   INTERROGATION TONES
+   ═══════════════════════════════════════ */
+.tone-press {
+    border-left-width: 3px;
+    border-left-color: rgb(220, 60, 50);
+}
+
+.tone-neutral {
+    border-left-width: 3px;
+    border-left-color: rgb(100, 100, 110);
+}
+
+.tone-empathy {
+    border-left-width: 3px;
+    border-left-color: rgb(60, 180, 80);
+}
+
+.btn-tone {
+    flex-grow: 1;
+    height: 36px;
+    font-size: 12px;
+    -unity-font-style: bold;
+    border-radius: 0;
+    border-width: 2px;
+    margin: 0 3px;
+    letter-spacing: 1px;
+}
+
+.btn-tone-press {
+    background-color: rgba(50, 15, 15, 0.9);
+    border-color: rgb(180, 50, 40);
+    color: rgb(240, 100, 90);
+}
+
+.btn-tone-press:hover {
+    background-color: rgba(80, 20, 20, 0.95);
+    border-color: rgb(240, 80, 70);
+}
+
+.btn-tone-neutral {
+    background-color: rgba(20, 20, 25, 0.9);
+    border-color: rgb(80, 80, 90);
+    color: rgb(180, 180, 190);
+}
+
+.btn-tone-neutral:hover {
+    background-color: rgba(35, 35, 40, 0.95);
+    border-color: rgb(130, 130, 140);
+}
+
+.btn-tone-empathy {
+    background-color: rgba(15, 40, 20, 0.9);
+    border-color: rgb(50, 140, 60);
+    color: rgb(90, 220, 100);
+}
+
+.btn-tone-empathy:hover {
+    background-color: rgba(20, 60, 25, 0.95);
+    border-color: rgb(70, 200, 80);
+}
+
 .timeline-entry-btn {
     flex-grow: 1;
     height: auto;
