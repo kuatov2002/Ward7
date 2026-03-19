@@ -30,17 +30,33 @@ public static class UISetupHelper
             Debug.Log("Created [SceneSetup] GameObject");
         }
 
+        // Create URP base material if missing
+        const string matPath = "Assets/_Game/Materials/BaseLit.mat";
+        var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+        if (mat == null)
+        {
+            // Find the URP Lit shader
+            var shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null) shader = Shader.Find("Standard"); // fallback
+            mat = new Material(shader);
+            mat.color = Color.white;
+            System.IO.Directory.CreateDirectory("Assets/_Game/Materials");
+            AssetDatabase.CreateAsset(mat, matPath);
+            Debug.Log($"Created URP base material at {matPath}");
+        }
+
         // Assign references
         var so = new SerializedObject(setup);
         var uxml = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/_Game/UI/GameUI.uxml");
         var uss = AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/_Game/UI/GameUI.uss");
 
+        so.FindProperty("baseMaterial").objectReferenceValue = mat;
         so.FindProperty("gameUIAsset").objectReferenceValue = uxml;
         so.FindProperty("panelSettings").objectReferenceValue = ps;
         so.FindProperty("gameUIStyles").objectReferenceValue = uss;
         so.ApplyModifiedProperties();
 
-        Debug.Log("Cabinet scene setup complete! Assigned UXML, USS, and PanelSettings to SceneSetup.");
+        Debug.Log("Cabinet scene setup complete! Assigned material, UXML, USS, and PanelSettings to SceneSetup.");
         EditorUtility.SetDirty(setup);
     }
 }

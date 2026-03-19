@@ -7,6 +7,9 @@ using UnityEngine.UIElements;
 /// </summary>
 public class SceneSetup : MonoBehaviour
 {
+    [Header("Materials")]
+    [SerializeField] Material baseMaterial;
+
     [Header("UI")]
     [SerializeField] VisualTreeAsset gameUIAsset;
     [SerializeField] PanelSettings panelSettings;
@@ -253,7 +256,7 @@ public class SceneSetup : MonoBehaviour
     }
 
     // ─── HELPERS ───
-    static GameObject CreateBox(string name, Vector3 pos, Vector3 scale, Color color)
+    GameObject CreateBox(string name, Vector3 pos, Vector3 scale, Color color)
     {
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         go.name = name;
@@ -263,12 +266,18 @@ public class SceneSetup : MonoBehaviour
         return go;
     }
 
-    static void SetColor(GameObject go, Color color)
+    void SetColor(GameObject go, Color color)
     {
         var renderer = go.GetComponent<Renderer>();
-        if (renderer != null)
+        if (renderer == null) return;
+        if (baseMaterial != null)
         {
-            renderer.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            var mat = new Material(baseMaterial);
+            mat.color = color;
+            renderer.material = mat;
+        }
+        else
+        {
             renderer.material.color = color;
         }
     }
