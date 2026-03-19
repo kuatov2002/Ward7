@@ -261,8 +261,17 @@ public class BriefingUI : MonoBehaviour, IPanelController
         if (ProceduralAudio.Instance != null)
             ProceduralAudio.Instance.PlayStamp();
 
-        // Show commission reaction instead of immediately closing
-        ShowCommissionReaction(s, score, maxScore, mismatches);
+        // Set music to max intensity for dramatic moment
+        if (ProceduralMusic.Instance != null)
+            ProceduralMusic.Instance.SetIntensity(1f);
+
+        // Dramatic pause via transition, then show reaction
+        string vStr = _selected == VerdictType.Guilty ? "ВИНОВЕН" : "НЕ ВИНОВЕН";
+        int sc = score; int ms = maxScore; int mm = mismatches;
+        var suspect = s;
+        UIManager.Instance.PlayDayTransition($"Вердикт: {vStr}", () => {
+            ShowCommissionReaction(suspect, sc, ms, mm);
+        });
     }
 
     void ShowCommissionReaction(SuspectSO s, int score, int maxScore, int mismatches)

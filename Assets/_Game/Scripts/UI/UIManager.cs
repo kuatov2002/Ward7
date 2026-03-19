@@ -15,6 +15,8 @@ public class UIManager : MonoBehaviour
     Label _dayHint;
     Label _interactHint;
     Label _controlsHint;
+    VisualElement _transitionOverlay;
+    Label _transitionText;
 
     readonly Dictionary<string, VisualElement> _panels = new();
     string _activePanel;
@@ -45,6 +47,8 @@ public class UIManager : MonoBehaviour
         _dayHint = _root.Q<Label>("day-hint");
         _interactHint = _root.Q<Label>("interact-hint");
         _controlsHint = _root.Q<Label>("controls-hint");
+        _transitionOverlay = _root.Q<VisualElement>("transition-overlay");
+        _transitionText = _root.Q<Label>("transition-text");
 
         string[] panelNames = {
             "main-menu-panel", "outcome-panel", "doccompare-panel", "dossier-panel",
@@ -154,6 +158,54 @@ public class UIManager : MonoBehaviour
         yield return new WaitForSeconds(sec);
         if (_controlsHint != null)
             _controlsHint.AddToClassList("hidden");
+    }
+
+    /// <summary>
+    /// Fade to black, show day text, fade back, then call onComplete.
+    /// </summary>
+    public void PlayDayTransition(string text, System.Action onComplete)
+    {
+        StartCoroutine(DayTransitionRoutine(text, onComplete));
+    }
+
+    IEnumerator DayTransitionRoutine(string text, System.Action onComplete)
+    {
+        EnsureInit();
+        if (_transitionOverlay == null) { onComplete?.Invoke(); yield break; }
+
+        // Fade in (show black)
+        _transitionOverlay.RemoveFromClassList("hidden");
+        _transitionOverlay.style.opacity = 0f;
+        _transitionText.text = "";
+
+        float t = 0f;
+        while (t < 0.5f) // fade to black
+        {
+            t += Time.deltaTime;
+            _transitionOverlay.style.opacity = Mathf.Clamp01(t / 0.5f);
+            yield return null;
+        }
+        _transitionOverlay.style.opacity = 1f;
+
+        // Show text
+        _transitionText.text = text;
+        yield return new WaitForSeconds(1.2f);
+
+        // Callback while still black (switch panels etc)
+        onComplete?.Invoke();
+        yield return new WaitForSeconds(0.3f);
+
+        // Fade out (reveal scene)
+        _transitionText.text = "";
+        t = 0f;
+        while (t < 0.6f)
+        {
+            t += Time.deltaTime;
+            _transitionOverlay.style.opacity = 1f - Mathf.Clamp01(t / 0.6f);
+            yield return null;
+        }
+        _transitionOverlay.style.opacity = 0f;
+        _transitionOverlay.AddToClassList("hidden");
     }
 
     public void HideInteractHint()

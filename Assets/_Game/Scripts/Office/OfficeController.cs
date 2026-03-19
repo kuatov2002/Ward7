@@ -148,8 +148,18 @@ public class OfficeController : MonoBehaviour
             return;
         }
 
-        state.AdvanceDay();
-        HandleDayStart();
+        // Day transition with fade
+        string[] dayNames = { "", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница" };
+        int nextDay = d + 1;
+        if (nextDay > 5) nextDay = 0;
+        string transText = nextDay >= 1 && nextDay <= 5
+            ? dayNames[nextDay]
+            : $"Неделя {state.CurrentWeek}";
+
+        UIManager.Instance.PlayDayTransition(transText, () => {
+            state.AdvanceDay();
+            HandleDayStart();
+        });
     }
 
     public void HandleDayStart()
@@ -165,15 +175,17 @@ public class OfficeController : MonoBehaviour
     public void AfterVerdictCommit()
     {
         var state = ServiceLocator.Get<GameStateService>();
-        state.AdvanceDay();
-        if (state.IsGameComplete)
-        {
-            UIManager.Instance.ShowPanel("ending-panel");
-        }
-        else
-        {
-            ServiceLocator.Get<CaseService>().LoadWeek(state.CurrentWeek);
-            HandleDayStart();
-        }
+        UIManager.Instance.PlayDayTransition("Протокол подписан...", () => {
+            state.AdvanceDay();
+            if (state.IsGameComplete)
+            {
+                UIManager.Instance.ShowPanel("ending-panel");
+            }
+            else
+            {
+                ServiceLocator.Get<CaseService>().LoadWeek(state.CurrentWeek);
+                HandleDayStart();
+            }
+        });
     }
 }

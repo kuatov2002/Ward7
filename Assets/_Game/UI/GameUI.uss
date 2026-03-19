@@ -557,6 +557,28 @@
 }
 
 /* ═══════════════════════════════════════
+   DAY TRANSITION
+   ═══════════════════════════════════════ */
+.transition-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 1);
+    align-items: center;
+    justify-content: center;
+}
+
+.transition-text {
+    font-size: 28px;
+    -unity-font-style: bold;
+    color: var(--text-amber);
+    -unity-text-align: middle-center;
+    letter-spacing: 4px;
+}
+
+/* ═══════════════════════════════════════
    MINI-GAMES
    ═══════════════════════════════════════ */
 

@@ -70,20 +70,60 @@ public class OutcomeUI : MonoBehaviour, IPanelController
         var suspect = cases.ActiveCase;
         if (suspect != null)
         {
-            panel.Add(Spacer());
-            var caseName = new Label($"Дело: {suspect.displayName}");
-            caseName.AddToClassList("header-center");
-            panel.Add(caseName);
+            panel.Add(Spacer(20));
+
+            // Dramatic case intro card
+            var caseCard = new VisualElement();
+            caseCard.AddToClassList("box");
+            caseCard.style.borderLeftWidth = 4;
+            caseCard.style.borderLeftColor = new Color(1f, 0.7f, 0.2f);
+            caseCard.style.paddingTop = 12;
+            caseCard.style.paddingBottom = 12;
+
+            var caseLabel = new Label("НОВОЕ ДЕЛО");
+            caseLabel.AddToClassList("text-small");
+            caseLabel.AddToClassList("text-amber");
+            caseLabel.style.letterSpacing = 3;
+            caseCard.Add(caseLabel);
+
+            var caseName = new Label(suspect.displayName);
+            caseName.AddToClassList("title");
+            caseName.style.fontSize = 24;
+            caseName.style.marginTop = 4;
+            caseName.style.marginBottom = 4;
+            caseCard.Add(caseName);
+
+            // First sentence of dossier as "accusation"
+            string accusation = "";
+            if (!string.IsNullOrEmpty(suspect.dossierText))
+            {
+                int dotIdx = suspect.dossierText.IndexOf('.');
+                if (dotIdx > 0) accusation = suspect.dossierText.Substring(0, dotIdx + 1);
+                else accusation = suspect.dossierText.Length > 100
+                    ? suspect.dossierText.Substring(0, 100) + "..."
+                    : suspect.dossierText;
+            }
+            if (!string.IsNullOrEmpty(accusation))
+            {
+                var accLabel = new Label(accusation);
+                accLabel.AddToClassList("text");
+                accLabel.style.unityFontStyleAndWeight = FontStyle.Italic;
+                caseCard.Add(accLabel);
+            }
+
+            panel.Add(caseCard);
         }
 
         panel.Add(Spacer(30));
 
         var btn = new Button(() => {
-            state.AdvanceDay();
-            UIManager.Instance.HideAllPanels();
-            OfficeController.Instance.RefreshDesk();
+            UIManager.Instance.PlayDayTransition("Понедельник", () => {
+                state.AdvanceDay();
+                UIManager.Instance.HideAllPanels();
+                OfficeController.Instance.RefreshDesk();
+            });
         });
-        btn.text = "ДАЛЕЕ";
+        btn.text = "НАЧАТЬ РАССЛЕДОВАНИЕ";
         btn.AddToClassList("btn-wide");
         panel.Add(btn);
     }

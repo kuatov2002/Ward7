@@ -33,4 +33,9 @@
 
     <!-- Controls hint (top-left, shown on game start) -->
     <ui:Label name="controls-hint" class="controls-hint hidden" />
+
+    <!-- Day transition overlay (fade to black + day text) -->
+    <ui:VisualElement name="transition-overlay" class="transition-overlay hidden">
+        <ui:Label name="transition-text" class="transition-text" />
+    </ui:VisualElement>
 </ui:UXML>

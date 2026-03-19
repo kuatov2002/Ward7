@@ -25,7 +25,26 @@ public class EndingUI : MonoBehaviour, IPanelController
 
         panel.Add(Spacer(20));
 
-        var sub = new Label("Все вердикты и их последствия:");
+        // Career summary
+        int totalCases = save.Data.verdicts.Count;
+        int correctCount = 0;
+        foreach (var v in save.Data.verdicts)
+        {
+            var sus = cases.GetCase(v.week);
+            if (sus != null && ((v.verdict == VerdictType.Guilty && sus.isGuilty) ||
+                (v.verdict == VerdictType.NotGuilty && !sus.isGuilty)))
+                correctCount++;
+        }
+        var summary = new Label($"Дел расследовано: {totalCases}  |  Верных вердиктов: {correctCount}/{totalCases}");
+        summary.AddToClassList("text");
+        summary.AddToClassList(correctCount == totalCases ? "text-green" : "text-amber");
+        summary.style.unityTextAlign = TextAnchor.MiddleCenter;
+        summary.style.fontSize = 18;
+        panel.Add(summary);
+
+        panel.Add(Spacer(15));
+
+        var sub = new Label("Подробности расследований:");
         sub.AddToClassList("header");
         panel.Add(sub);
 
@@ -51,10 +70,18 @@ public class EndingUI : MonoBehaviour, IPanelController
             weekLabel.AddToClassList("text-bold");
             box.Add(weekLabel);
 
-            var verdictLabel = new Label($"Вердикт: {vStr}");
+            string truthStr = suspect != null
+                ? (suspect.isGuilty ? "ВИНОВЕН" : "НЕ ВИНОВЕН")
+                : "???";
+            var verdictLabel = new Label($"Ваш вердикт: {vStr}");
             verdictLabel.AddToClassList("text");
             verdictLabel.AddToClassList(correct ? "text-green" : "text-red");
             box.Add(verdictLabel);
+
+            var truthLabel = new Label($"Истина: {truthStr}  {(correct ? "\u2714 ВЕРНО" : "\u2718 ОШИБКА")}");
+            truthLabel.AddToClassList("text-bold");
+            truthLabel.AddToClassList(correct ? "text-green" : "text-red");
+            box.Add(truthLabel);
 
             if (v.justificationScore > 0)
             {

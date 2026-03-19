@@ -277,12 +277,15 @@ public class SceneSetup : MonoBehaviour
         objects.Add(evObj);
 
         // 4. Computer monitor
-        Cyl("MonitorStand", new Vector3(0.35f, 0.77f, 1.0f), new Vector3(0.06f, 0.03f, 0.06f), Metal);
-        Box("MonitorNeck", new Vector3(0.35f, 0.82f, 1.0f), new Vector3(0.03f, 0.06f, 0.03f), Metal);
         var monitorScreen = Box("Monitor", new Vector3(0.35f, 0.98f, 1.0f),
             new Vector3(0.5f, 0.32f, 0.03f), MonitorGray);
-        // Screen glow area
-        Box("ScreenGlow", new Vector3(0.35f, 0.98f, 0.98f), new Vector3(0.44f, 0.26f, 0.005f), ScreenGlow);
+        // Stand and neck as children so raycast on them finds the DeskObject
+        var mStand = Cyl("MonitorStand", new Vector3(0.35f, 0.77f, 1.0f), new Vector3(0.06f, 0.03f, 0.06f), Metal);
+        mStand.transform.SetParent(monitorScreen.transform);
+        var mNeck = Box("MonitorNeck", new Vector3(0.35f, 0.82f, 1.0f), new Vector3(0.03f, 0.06f, 0.03f), Metal);
+        mNeck.transform.SetParent(monitorScreen.transform);
+        var mGlow = Box("ScreenGlow", new Vector3(0.35f, 0.98f, 0.98f), new Vector3(0.44f, 0.26f, 0.005f), ScreenGlow);
+        mGlow.transform.SetParent(monitorScreen.transform);
         monitorScreen.transform.SetParent(parent.transform);
         var monObj = monitorScreen.AddComponent<DeskObject>();
         monObj.panelName = "testimony-panel";
@@ -398,7 +401,7 @@ public class SceneSetup : MonoBehaviour
         var atmosGo = new GameObject("[Atmosphere]");
         var atmos = atmosGo.AddComponent<AtmosphereController>();
         var cam = Camera.main != null ? Camera.main.transform : null;
-        atmos.Init(dl, pl, cam);
+        atmos.Init(dl, pl, cam, baseMaterial);
     }
 
     void BuildAudio()

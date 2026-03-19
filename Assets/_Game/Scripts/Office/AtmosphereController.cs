@@ -7,11 +7,13 @@ public class AtmosphereController : MonoBehaviour
     Light _dirLight;
     Light _deskLamp;
     ParticleSystem _dust;
+    Material _baseMat;
 
     void Awake() => Instance = this;
 
-    public void Init(Light dirLight, Light deskLamp, Transform cam)
+    public void Init(Light dirLight, Light deskLamp, Transform cam, Material baseMat = null)
     {
+        _baseMat = baseMat;
         _dirLight = dirLight;
         _deskLamp = deskLamp;
         CreateDustParticles();
@@ -82,7 +84,11 @@ public class AtmosphereController : MonoBehaviour
         shape.scale = new Vector3(2f, 1f, 1.5f);
 
         var pRenderer = dustGo.GetComponent<ParticleSystemRenderer>();
-        pRenderer.material = new Material(pRenderer.material);
-        pRenderer.material.color = new Color(0.7f, 0.8f, 0.5f, 0.15f);
+        if (_baseMat != null)
+        {
+            var mat = new Material(_baseMat);
+            mat.color = new Color(0.7f, 0.8f, 0.5f, 0.15f);
+            pRenderer.material = mat;
+        }
     }
 }
