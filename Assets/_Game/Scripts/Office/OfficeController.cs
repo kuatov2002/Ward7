@@ -45,14 +45,25 @@ public class OfficeController : MonoBehaviour
             UIManager.Instance.ShowDayLabel($"Неделя {state.CurrentWeek} — {dayNames[day]}");
         else
             UIManager.Instance.HideDayLabel();
+
+        // Update atmosphere lighting
+        if (AtmosphereController.Instance != null)
+            AtmosphereController.Instance.SetDayLighting(day);
+
+        // Update evidence board
+        if (EvidenceBoard.Instance != null)
+            EvidenceBoard.Instance.RefreshFromChoices();
     }
 
     public void OnGameStarted()
     {
         _gameStarted = true;
-        // Subscribe to day changes on the current state service
         ServiceLocator.Get<GameStateService>().OnDayChanged += _ => RefreshDesk();
         RefreshDesk();
+
+        // Start ambient sounds
+        if (ProceduralAudio.Instance != null)
+            ProceduralAudio.Instance.StartAmbient();
     }
 
     public void OpenPanel(string panelName)

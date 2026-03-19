@@ -28,12 +28,14 @@ public class DeskObject : MonoBehaviour
 
     public void SetHighlight(bool on)
     {
-        if (_highlighted == on || _renderer == null) return;
+        if (_highlighted == on) return;
         _highlighted = on;
-        if (on)
-            _renderer.material.color = _baseColor * 1.5f;
-        else
-            _renderer.material.color = _baseColor;
+        if (_renderer != null)
+        {
+            _renderer.material.color = on ? _baseColor * 1.5f : _baseColor;
+        }
+        var anim = GetComponent<DeskObjectAnimator>();
+        if (anim != null) anim.SetHighlighted(on);
     }
 
     public void SetVisible(bool visible)
@@ -50,13 +52,25 @@ public class DeskObject : MonoBehaviour
 
     public void Interact()
     {
+        var audio = ProceduralAudio.Instance;
+
         if (isCalendar)
         {
+            if (audio != null) audio.PlayPaperFlip();
             OfficeController.Instance.TryAdvanceDay();
             return;
         }
 
         if (!string.IsNullOrEmpty(panelName))
+        {
+            // Play contextual sound
+            if (audio != null)
+            {
+                if (panelName.Contains("contact")) audio.PlayPhoneRing();
+                else if (panelName.Contains("briefing")) audio.PlayStamp();
+                else audio.PlayPaperFlip();
+            }
             OfficeController.Instance.OpenPanel(panelName);
+        }
     }
 }

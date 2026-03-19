@@ -67,14 +67,23 @@ public class ContactUI : MonoBehaviour, IPanelController
                 box.Add(tag);
                 box.Add(Spacer(5));
                 var resp = new Label(c.response);
+                resp.name = "resp-" + c.contactId;
                 resp.AddToClassList("text");
                 box.Add(resp);
             }
             else if (!done)
             {
+                string cId = c.contactId;
+                string cResp = c.response;
                 var btn = new Button(() => {
-                    choices.Commit(w, ChoiceType.Contact, c.contactId);
-                    OnShow(); // refresh
+                    choices.Commit(w, ChoiceType.Contact, cId);
+                    OnShow();
+                    // Typewriter on the response
+                    var respLabel = UIManager.Instance.GetRoot()
+                        .Q<VisualElement>(PanelName)
+                        .Q<Label>("resp-" + cId);
+                    if (respLabel != null)
+                        StartCoroutine(TypewriterEffect.Run(respLabel, cResp));
                 });
                 btn.text = "Позвонить";
                 btn.AddToClassList("btn-small");

@@ -22,6 +22,8 @@ public class SceneSetup : MonoBehaviour
         BuildDeskObjects();
         BuildUI();
         BuildLighting();
+        BuildAudio();
+        BuildEvidenceBoard();
     }
 
     // ─── ROOM ───
@@ -129,6 +131,8 @@ public class SceneSetup : MonoBehaviour
         var phoneObj = phoneBase.AddComponent<DeskObject>();
         phoneObj.panelName = "contact-panel";
         phoneObj.visibleOnDay = 1;
+        var phoneAnim = phoneBase.AddComponent<DeskObjectAnimator>();
+        phoneAnim.animType = DeskObjectAnimator.AnimationType.PhoneVibrate;
         objects.Add(phoneObj);
 
         // 3. Evidence folders (day 2)
@@ -149,6 +153,8 @@ public class SceneSetup : MonoBehaviour
         var evObj = evidenceParent.AddComponent<DeskObject>();
         evObj.panelName = "evidence-panel";
         evObj.visibleOnDay = 2;
+        var evAnim = evidenceParent.AddComponent<DeskObjectAnimator>();
+        evAnim.animType = DeskObjectAnimator.AnimationType.GlowPulse;
         objects.Add(evObj);
 
         // 4. Computer monitor (day 3 - testimony/messenger)
@@ -189,6 +195,8 @@ public class SceneSetup : MonoBehaviour
         var stampObj = stamp.AddComponent<DeskObject>();
         stampObj.panelName = "briefing-panel";
         stampObj.visibleOnDay = 5;
+        var stampAnim = stamp.AddComponent<DeskObjectAnimator>();
+        stampAnim.animType = DeskObjectAnimator.AnimationType.StampReady;
         objects.Add(stampObj);
 
         // 7. Calendar (always visible - advance day)
@@ -253,6 +261,27 @@ public class SceneSetup : MonoBehaviour
         pl.intensity = 1.2f;
         pl.range = 4f;
         deskLamp.transform.position = new Vector3(-0.3f, 1.3f, 0.6f);
+
+        // Atmosphere controller
+        var atmosGo = new GameObject("[Atmosphere]");
+        var atmos = atmosGo.AddComponent<AtmosphereController>();
+        var cam = Camera.main != null ? Camera.main.transform : null;
+        atmos.Init(dl, pl, cam);
+    }
+
+    // ─── AUDIO ───
+    void BuildAudio()
+    {
+        var audioGo = new GameObject("[ProceduralAudio]");
+        audioGo.AddComponent<ProceduralAudio>();
+    }
+
+    // ─── EVIDENCE BOARD ───
+    void BuildEvidenceBoard()
+    {
+        var boardGo = new GameObject("[EvidenceBoard]");
+        var board = boardGo.AddComponent<EvidenceBoard>();
+        board.Init(baseMaterial);
     }
 
     // ─── HELPERS ───
