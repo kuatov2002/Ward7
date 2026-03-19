@@ -47,7 +47,8 @@ public class UIManager : MonoBehaviour
         string[] panelNames = {
             "main-menu-panel", "outcome-panel", "dossier-panel",
             "contact-panel", "evidence-panel", "testimony-panel",
-            "interrogation-panel", "briefing-panel", "ending-panel"
+            "interrogation-panel", "connection-panel", "timeline-panel",
+            "briefing-panel", "ending-panel"
         };
 
         foreach (var n in panelNames)

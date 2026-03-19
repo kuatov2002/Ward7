@@ -10,6 +10,8 @@
         <ui:VisualElement name="evidence-panel" class="panel panel-scroll hidden" />
         <ui:VisualElement name="testimony-panel" class="panel panel-scroll hidden" />
         <ui:VisualElement name="interrogation-panel" class="panel panel-scroll hidden" />
+        <ui:VisualElement name="connection-panel" class="panel panel-scroll hidden" />
+        <ui:VisualElement name="timeline-panel" class="panel panel-scroll hidden" />
         <ui:VisualElement name="briefing-panel" class="panel panel-center hidden" />
         <ui:VisualElement name="ending-panel" class="panel panel-scroll hidden" />
     </ui:VisualElement>

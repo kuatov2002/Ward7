@@ -33,6 +33,9 @@ public class PressureService
     {
         _save.Data.currentPressure = 0;
         _save.Data.bluffFailed = false;
+        _save.Data.foundConnections.Clear();
+        _save.Data.connectionAttemptsUsed = 0;
+        _save.Data.timelinePlacements.Clear();
         _save.Save();
     }
 }

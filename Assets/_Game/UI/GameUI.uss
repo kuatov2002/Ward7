@@ -363,6 +363,102 @@
     color: var(--text-main);
 }
 
+/* ═══════════════════════════════════════
+   CONNECTION BOARD
+   ═══════════════════════════════════════ */
+.conn-card {
+    width: 120px;
+    height: 50px;
+    margin: 4px;
+    font-size: 12px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    background-color: rgba(15, 25, 15, 0.9);
+    border-width: 2px;
+    border-radius: 0;
+    white-space: normal;
+    padding: 4px;
+}
+
+.conn-card-person {
+    border-color: rgb(50, 130, 200);
+    color: rgb(80, 170, 240);
+}
+
+.conn-card-item {
+    border-color: rgb(200, 150, 50);
+    color: rgb(240, 190, 80);
+}
+
+.conn-card-event {
+    border-color: rgb(180, 60, 60);
+    color: rgb(220, 100, 100);
+}
+
+.conn-card-selected {
+    background-color: rgba(40, 80, 40, 0.95);
+    border-color: rgb(80, 255, 80);
+    color: rgb(80, 255, 80);
+}
+
+.conn-card-done {
+    opacity: 0.5;
+}
+
+.conn-card:hover {
+    background-color: rgba(25, 45, 25, 0.95);
+}
+
+.text-amber {
+    color: var(--text-amber);
+}
+
+.text-dim {
+    color: var(--text-dim);
+}
+
+/* ═══════════════════════════════════════
+   TIMELINE
+   ═══════════════════════════════════════ */
+.timeline-card {
+    min-width: 140px;
+    height: 36px;
+    margin: 3px;
+    font-size: 11px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    background-color: rgba(15, 25, 15, 0.9);
+    color: var(--text-main);
+    border-width: 1px;
+    border-color: var(--border-main);
+    border-radius: 0;
+    padding: 2px 6px;
+    white-space: normal;
+}
+
+.timeline-card:hover {
+    background-color: rgba(25, 45, 25, 0.95);
+    border-color: var(--border-bright);
+}
+
+.timeline-card-selected {
+    background-color: rgba(30, 60, 30, 0.95);
+    border-color: rgb(80, 255, 80);
+    color: rgb(80, 255, 80);
+}
+
+.timeline-card-placed {
+    background-color: rgba(40, 35, 10, 0.9);
+    border-color: rgb(200, 180, 50);
+    color: rgb(220, 200, 80);
+}
+
+.timeline-card-correct {
+    background-color: rgba(15, 40, 15, 0.9);
+    border-color: rgb(60, 180, 60);
+    color: rgb(80, 220, 80);
+}
+
 /* ─── SCROLLBAR ─── */
 Scroller {
     width: 8px;

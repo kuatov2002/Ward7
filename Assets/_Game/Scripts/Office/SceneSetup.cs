@@ -316,6 +316,27 @@ public class SceneSetup : MonoBehaviour
         calObj.visibleOnDay = -1;
         objects.Add(calObj);
 
+        // 8. Connection board (the evidence board on wall — always available)
+        // We make the existing board clickable
+        var boardTrigger = Box("BoardTrigger", new Vector3(-1.8f, 1.5f, 2.43f),
+            new Vector3(1.2f, 0.8f, 0.04f), new Color(0.55f, 0.4f, 0.2f));
+        boardTrigger.transform.SetParent(parent.transform);
+        var boardObj = boardTrigger.AddComponent<DeskObject>();
+        boardObj.panelName = "connection-panel";
+        boardObj.visibleOnDay = 1;
+        boardObj.visibleFromDayOnward = true;
+        objects.Add(boardObj);
+
+        // 9. Timeline clipboard (on desk, available from Thursday onward)
+        var timeline = Box("Timeline", new Vector3(0.3f, 0.775f, 0.35f),
+            new Vector3(0.22f, 0.01f, 0.16f), new Color(0.6f, 0.55f, 0.4f));
+        timeline.transform.SetParent(parent.transform);
+        var tlObj = timeline.AddComponent<DeskObject>();
+        tlObj.panelName = "timeline-panel";
+        tlObj.visibleOnDay = 4;
+        tlObj.visibleFromDayOnward = true;
+        objects.Add(tlObj);
+
         officeCtrl.deskObjects = objects.ToArray();
     }
 
@@ -337,6 +358,8 @@ public class SceneSetup : MonoBehaviour
         uiGo.AddComponent<EvidenceUI>();
         uiGo.AddComponent<TestimonyUI>();
         uiGo.AddComponent<InterrogationUI>();
+        uiGo.AddComponent<ConnectionBoardUI>();
+        uiGo.AddComponent<TimelineUI>();
         uiGo.AddComponent<BriefingUI>();
         uiGo.AddComponent<EndingUI>();
     }

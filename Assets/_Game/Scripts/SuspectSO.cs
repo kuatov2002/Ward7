@@ -27,6 +27,16 @@ public class SuspectSO : ScriptableObject
     [Tooltip("Pressure at which suspect shuts down (0 = no pressure system)")]
     public int pressureThreshold = 5;
 
+    [Header("Timeline Reconstruction")]
+    public TimelineEventData[] timelineEvents;
+    public float timelineStartHour = 22f;
+    public float timelineEndHour = 2f;
+
+    [Header("Connection Board")]
+    public ConnectionCardData[] connectionCards;
+    public ConnectionData[] connections;
+    public int maxConnectionAttempts = 8;
+
     [Header("Friday - Verdict Justification")]
     public ArgumentData[] arguments;
 
@@ -117,4 +127,40 @@ public class ArgumentData
     [TextArea(1, 3)] public string text;
     public bool supportsGuilty;
     [Range(1, 3)] public int weight = 1;
+}
+
+[System.Serializable]
+public class TimelineEventData
+{
+    public string eventId;
+    public string description;
+    public float correctHour; // 23.083 = 23:05, 1.5 = 01:30
+    [Tooltip("Discovery gate: ChoiceType that must be made to reveal this event. None = always visible.")]
+    public ChoiceType requiredChoiceType;
+    [Tooltip("Specific choiceId required, or empty = any choice of that type reveals it.")]
+    public string requiredChoiceId;
+    [Tooltip("If true, event is always visible (no gate)")]
+    public bool alwaysVisible;
+}
+
+[System.Serializable]
+public class ConnectionCardData
+{
+    public string cardId;
+    public string label;
+    public CardType type;
+    public enum CardType { Person, Item, Event }
+    [Tooltip("Discovery gate: ChoiceType required. Ignored if alwaysVisible.")]
+    public ChoiceType requiredChoiceType;
+    public string requiredChoiceId;
+    [Tooltip("If true, card is always visible (no gate)")]
+    public bool alwaysVisible;
+}
+
+[System.Serializable]
+public class ConnectionData
+{
+    public string cardA;
+    public string cardB;
+    [TextArea(1, 3)] public string revealText;
 }

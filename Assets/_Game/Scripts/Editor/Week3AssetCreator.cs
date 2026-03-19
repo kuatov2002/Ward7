@@ -182,6 +182,44 @@ public static class Week3AssetCreator
             new ArgumentData { argumentId = "arg_10", text = "Зотов имел полный доступ как администратор системы", supportsGuilty = false, weight = 2 }
         };
 
+        // Timeline events
+        s.timelineStartHour = 21f;
+        s.timelineEndHour = 3f;
+        s.timelineEvents = new TimelineEventData[]
+        {
+            new TimelineEventData { eventId = "tl_belov_stay", description = "Белов задержался на работе", correctHour = 21f, alwaysVisible = true },
+            new TimelineEventData { eventId = "tl_belov_leave", description = "Белов уехал домой", correctHour = 22.5f, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_usb" },
+            new TimelineEventData { eventId = "tl_access_db", description = "Доступ к базе данных", correctHour = 23.783f, alwaysVisible = true },
+            new TimelineEventData { eventId = "tl_usb_write", description = "Запись на USB-накопитель", correctHour = 2.25f, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_usb" },
+            new TimelineEventData { eventId = "tl_zotov_leave", description = "Зотов покинул здание", correctHour = 3f, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_usb" },
+            new TimelineEventData { eventId = "tl_email_sent", description = "Отправлено письмо покупателю", correctHour = 2.5f, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_email" }
+        };
+
+        // Connection board
+        s.connectionCards = new ConnectionCardData[]
+        {
+            new ConnectionCardData { cardId = "card_belov", label = "Белов", type = ConnectionCardData.CardType.Person, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_zotov", label = "Зотов", type = ConnectionCardData.CardType.Person, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_garant", label = "Гарант-Плюс", type = ConnectionCardData.CardType.Person, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_mac", label = "MAC-адрес", type = ConnectionCardData.CardType.Item, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_serverlogs" },
+            new ConnectionCardData { cardId = "card_usb", label = "USB-накопитель", type = ConnectionCardData.CardType.Item, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_50k", label = "Кредит $50,000", type = ConnectionCardData.CardType.Item, requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Нэш" },
+            new ConnectionCardData { cardId = "card_account", label = "Учётная запись", type = ConnectionCardData.CardType.Item, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_leak", label = "Утечка данных", type = ConnectionCardData.CardType.Event, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_linguistics", label = "Лингвистика", type = ConnectionCardData.CardType.Event, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_email" }
+        };
+
+        s.connections = new ConnectionData[]
+        {
+            new ConnectionData { cardA = "card_mac", cardB = "card_zotov", revealText = "MAC-адрес в серверных логах принадлежит рабочей станции Зотова, а не ноутбуку Белова." },
+            new ConnectionData { cardA = "card_zotov", cardB = "card_account", revealText = "Зотов как администратор мог сбросить пароль любого аккаунта и войти под чужим именем." },
+            new ConnectionData { cardA = "card_zotov", cardB = "card_50k", revealText = "Зотов оформил кредит на $50,000 'на ремонт дома'. Ни одного чека. Деньги обналичены." },
+            new ConnectionData { cardA = "card_linguistics", cardB = "card_zotov", revealText = "Лингвистический анализ переписки показывает терминологию из отчётов Зотова." },
+            new ConnectionData { cardA = "card_usb", cardB = "card_zotov", revealText = "USB записан в 02:15. Камера показывает: Белов уехал в 22:30, Зотов — в 03:00." },
+            new ConnectionData { cardA = "card_zotov", cardB = "card_leak", revealText = "Зотов сам обнаружил и сообщил об утечке. Обычно тот кто находит — не виноват. Но у него был полный доступ." }
+        };
+        s.maxConnectionAttempts = 9;
+
         SaveAsset(s, "suspect_03_belov");
     }
 

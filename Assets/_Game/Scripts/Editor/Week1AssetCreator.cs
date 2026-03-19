@@ -269,6 +269,46 @@ public static class Week1AssetCreator
             new ArgumentData { argumentId = "arg_10", text = "Бизнес стал прибыльным — нет смысла сжигать", supportsGuilty = false, weight = 2 }
         };
 
+        // Timeline events
+        s.timelineStartHour = 22f;
+        s.timelineEndHour = 2f;
+        s.timelineEvents = new TimelineEventData[]
+        {
+            new TimelineEventData { eventId = "tl_salas_enter", description = "Салас вошёл на склад", correctHour = 22.75f, alwaysVisible = true },
+            new TimelineEventData { eventId = "tl_salas_exit", description = "Салас вышел со склада", correctHour = 23.083f, alwaysVisible = true },
+            new TimelineEventData { eventId = "tl_server_reboot", description = "Сервер перезагружен", correctHour = 23.167f, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_accesslog" },
+            new TimelineEventData { eventId = "tl_holloway_enter", description = "Холлоуэй вошёл на склад", correctHour = 23.233f, alwaysVisible = true },
+            new TimelineEventData { eventId = "tl_gomez_enter", description = "Гомес вошёл на склад", correctHour = 23.783f, alwaysVisible = true },
+            new TimelineEventData { eventId = "tl_fire_start", description = "Начало пожара", correctHour = 1.5f, alwaysVisible = true }
+        };
+
+        // Connection board
+        s.connectionCards = new ConnectionCardData[]
+        {
+            new ConnectionCardData { cardId = "card_holloway", label = "Холлоуэй", type = ConnectionCardData.CardType.Person, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_salas", label = "Салас", type = ConnectionCardData.CardType.Person, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_gomez", label = "Гомес", type = ConnectionCardData.CardType.Person, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_reid", label = "Рид", type = ConnectionCardData.CardType.Person, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_bankstatement" },
+            new ConnectionCardData { cardId = "card_techsolv", label = "TechSolv-7", type = ConnectionCardData.CardType.Item, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_firereport" },
+            new ConnectionCardData { cardId = "card_greentech", label = "GreenTech", type = ConnectionCardData.CardType.Item, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_insurance", label = "Страховка $2.4M", type = ConnectionCardData.CardType.Item, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_fire2004", label = "Пожар 2004", type = ConnectionCardData.CardType.Event, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_fire", label = "Пожар склада", type = ConnectionCardData.CardType.Event, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_dissolution", label = "Расторжение", type = ConnectionCardData.CardType.Event, requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Нэш" }
+        };
+
+        s.connections = new ConnectionData[]
+        {
+            new ConnectionData { cardA = "card_salas", cardB = "card_techsolv", revealText = "Салас — единственный зарегистрированный покупатель TechSolv-7. Холлоуэй в реестре не значится." },
+            new ConnectionData { cardA = "card_reid", cardB = "card_greentech", revealText = "Карл Рид — директор номинальной компании GreenTech Disposal Services." },
+            new ConnectionData { cardA = "card_reid", cardB = "card_salas", revealText = "Рид ранее работал юристом в компании Саласа. Связь может быть не случайной." },
+            new ConnectionData { cardA = "card_gomez", cardB = "card_salas", revealText = "Гомес звонил Саласу 7 раз за неделю до пожара. Был информатором — знал расписание склада." },
+            new ConnectionData { cardA = "card_salas", cardB = "card_insurance", revealText = "При осуждении партнёра его доля автоматически переходит другому. Салас получает всё." },
+            new ConnectionData { cardA = "card_reid", cardB = "card_fire2004", revealText = "Рид нашёл черновик первичного осмотра пожара 2004 года и использовал для шантажа Холлоуэя." },
+            new ConnectionData { cardA = "card_salas", cardB = "card_dissolution", revealText = "Салас подал заявление о принудительном расторжении за 2 дня до пожара." }
+        };
+        s.maxConnectionAttempts = 10;
+
         SaveAsset(s, "suspect_01_holloway");
     }
 

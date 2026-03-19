@@ -180,6 +180,44 @@ public static class Week2AssetCreator
             new ArgumentData { argumentId = "arg_10", text = "У Марины нет машины — алиби Елены не совпадает", supportsGuilty = true, weight = 2 }
         };
 
+        // Timeline events
+        s.timelineStartHour = 18f;
+        s.timelineEndHour = 24f;
+        s.timelineEvents = new TimelineEventData[]
+        {
+            new TimelineEventData { eventId = "tl_elena_home", description = "Елена вернулась домой", correctHour = 18.5f, alwaysVisible = true },
+            new TimelineEventData { eventId = "tl_andrei_drink", description = "Андрей начал пить виски", correctHour = 19f, alwaysVisible = true },
+            new TimelineEventData { eventId = "tl_elena_call", description = "Елена звонила Орлову", correctHour = 20f, requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Нэш" },
+            new TimelineEventData { eventId = "tl_andrei_sick", description = "Андрей почувствовал тошноту", correctHour = 21.5f, requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_semenov" },
+            new TimelineEventData { eventId = "tl_elena_sleep", description = "Елена легла спать", correctHour = 22.5f, alwaysVisible = true },
+            new TimelineEventData { eventId = "tl_andrei_collapse", description = "Андрей потерял сознание", correctHour = 23.5f, alwaysVisible = true }
+        };
+
+        // Connection board
+        s.connectionCards = new ConnectionCardData[]
+        {
+            new ConnectionCardData { cardId = "card_elena", label = "Елена", type = ConnectionCardData.CardType.Person, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_andrei", label = "Андрей", type = ConnectionCardData.CardType.Person, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_orlov", label = "Орлов", type = ConnectionCardData.CardType.Person, requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_orlov" },
+            new ConnectionCardData { cardId = "card_victoria", label = "Виктория", type = ConnectionCardData.CardType.Person, requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_victoria" },
+            new ConnectionCardData { cardId = "card_antifreeze", label = "Антифриз", type = ConnectionCardData.CardType.Item, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_insurance", label = "Страховка $800K", type = ConnectionCardData.CardType.Item, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_whiskey", label = "Бутылка виски", type = ConnectionCardData.CardType.Item, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_whiskey" },
+            new ConnectionCardData { cardId = "card_death", label = "Смерть Андрея", type = ConnectionCardData.CardType.Event, alwaysVisible = true },
+            new ConnectionCardData { cardId = "card_inheritance", label = "Наследство", type = ConnectionCardData.CardType.Event, requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Нэш" }
+        };
+
+        s.connections = new ConnectionData[]
+        {
+            new ConnectionData { cardA = "card_elena", cardB = "card_antifreeze", revealText = "Камера магазина зафиксировала Елену покупающей антифриз за 10 дней до смерти." },
+            new ConnectionData { cardA = "card_antifreeze", cardB = "card_whiskey", revealText = "Следы этиленгликоля обнаружены на дне бутылки и стенках горлышка." },
+            new ConnectionData { cardA = "card_elena", cardB = "card_insurance", revealText = "Елена лично оформила страховку, торопила агента, настаивала на максимальной сумме." },
+            new ConnectionData { cardA = "card_elena", cardB = "card_orlov", revealText = "Встречаются 3 месяца. Елена сказала Орлову: 'Скоро всё закончится.'" },
+            new ConnectionData { cardA = "card_victoria", cardB = "card_inheritance", revealText = "Виктория подала на наследство через час после смерти. При осуждении Елены доля делится иначе." },
+            new ConnectionData { cardA = "card_andrei", cardB = "card_whiskey", revealText = "Андрей пил регулярно. Этиленгликоль сладкий — в виски не чувствуется." }
+        };
+        s.maxConnectionAttempts = 9;
+
         SaveAsset(s, "suspect_02_rivera");
     }
 

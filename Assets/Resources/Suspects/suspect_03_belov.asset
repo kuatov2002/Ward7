@@ -599,6 +599,146 @@ MonoBehaviour:
       \u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430. \u041F\u0440\u043E\u0432\u0435\u0440\u044C\u0442\u0435
       \u0417\u043E\u0442\u043E\u0432\u0430.\xBB"
   pressureThreshold: 4
+  timelineEvents:
+  - eventId: tl_belov_stay
+    description: "\u0411\u0435\u043B\u043E\u0432 \u0437\u0430\u0434\u0435\u0440\u0436\u0430\u043B\u0441\u044F
+      \u043D\u0430 \u0440\u0430\u0431\u043E\u0442\u0435"
+    correctHour: 21
+    requiredChoiceType: 0
+    requiredChoiceId: 
+    alwaysVisible: 1
+  - eventId: tl_belov_leave
+    description: "\u0411\u0435\u043B\u043E\u0432 \u0443\u0435\u0445\u0430\u043B \u0434\u043E\u043C\u043E\u0439"
+    correctHour: 22.5
+    requiredChoiceType: 1
+    requiredChoiceId: evidence_usb
+    alwaysVisible: 0
+  - eventId: tl_access_db
+    description: "\u0414\u043E\u0441\u0442\u0443\u043F \u043A \u0431\u0430\u0437\u0435
+      \u0434\u0430\u043D\u043D\u044B\u0445"
+    correctHour: 23.783
+    requiredChoiceType: 0
+    requiredChoiceId: 
+    alwaysVisible: 1
+  - eventId: tl_usb_write
+    description: "\u0417\u0430\u043F\u0438\u0441\u044C \u043D\u0430 USB-\u043D\u0430\u043A\u043E\u043F\u0438\u0442\u0435\u043B\u044C"
+    correctHour: 2.25
+    requiredChoiceType: 1
+    requiredChoiceId: evidence_usb
+    alwaysVisible: 0
+  - eventId: tl_zotov_leave
+    description: "\u0417\u043E\u0442\u043E\u0432 \u043F\u043E\u043A\u0438\u043D\u0443\u043B
+      \u0437\u0434\u0430\u043D\u0438\u0435"
+    correctHour: 3
+    requiredChoiceType: 1
+    requiredChoiceId: evidence_usb
+    alwaysVisible: 0
+  - eventId: tl_email_sent
+    description: "\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u043F\u0438\u0441\u044C\u043C\u043E
+      \u043F\u043E\u043A\u0443\u043F\u0430\u0442\u0435\u043B\u044E"
+    correctHour: 2.5
+    requiredChoiceType: 1
+    requiredChoiceId: evidence_email
+    alwaysVisible: 0
+  timelineStartHour: 21
+  timelineEndHour: 3
+  connectionCards:
+  - cardId: card_belov
+    label: "\u0411\u0435\u043B\u043E\u0432"
+    type: 0
+    requiredChoiceType: 0
+    requiredChoiceId: 
+    alwaysVisible: 1
+  - cardId: card_zotov
+    label: "\u0417\u043E\u0442\u043E\u0432"
+    type: 0
+    requiredChoiceType: 0
+    requiredChoiceId: 
+    alwaysVisible: 1
+  - cardId: card_garant
+    label: "\u0413\u0430\u0440\u0430\u043D\u0442-\u041F\u043B\u044E\u0441"
+    type: 0
+    requiredChoiceType: 0
+    requiredChoiceId: 
+    alwaysVisible: 1
+  - cardId: card_mac
+    label: "MAC-\u0430\u0434\u0440\u0435\u0441"
+    type: 1
+    requiredChoiceType: 1
+    requiredChoiceId: evidence_serverlogs
+    alwaysVisible: 0
+  - cardId: card_usb
+    label: "USB-\u043D\u0430\u043A\u043E\u043F\u0438\u0442\u0435\u043B\u044C"
+    type: 1
+    requiredChoiceType: 0
+    requiredChoiceId: 
+    alwaysVisible: 1
+  - cardId: card_50k
+    label: "\u041A\u0440\u0435\u0434\u0438\u0442 $50,000"
+    type: 1
+    requiredChoiceType: 2
+    requiredChoiceId: "\u041D\u044D\u0448"
+    alwaysVisible: 0
+  - cardId: card_account
+    label: "\u0423\u0447\u0451\u0442\u043D\u0430\u044F \u0437\u0430\u043F\u0438\u0441\u044C"
+    type: 1
+    requiredChoiceType: 0
+    requiredChoiceId: 
+    alwaysVisible: 1
+  - cardId: card_leak
+    label: "\u0423\u0442\u0435\u0447\u043A\u0430 \u0434\u0430\u043D\u043D\u044B\u0445"
+    type: 2
+    requiredChoiceType: 0
+    requiredChoiceId: 
+    alwaysVisible: 1
+  - cardId: card_linguistics
+    label: "\u041B\u0438\u043D\u0433\u0432\u0438\u0441\u0442\u0438\u043A\u0430"
+    type: 2
+    requiredChoiceType: 1
+    requiredChoiceId: evidence_email
+    alwaysVisible: 0
+  connections:
+  - cardA: card_mac
+    cardB: card_zotov
+    revealText: "MAC-\u0430\u0434\u0440\u0435\u0441 \u0432 \u0441\u0435\u0440\u0432\u0435\u0440\u043D\u044B\u0445
+      \u043B\u043E\u0433\u0430\u0445 \u043F\u0440\u0438\u043D\u0430\u0434\u043B\u0435\u0436\u0438\u0442
+      \u0440\u0430\u0431\u043E\u0447\u0435\u0439 \u0441\u0442\u0430\u043D\u0446\u0438\u0438
+      \u0417\u043E\u0442\u043E\u0432\u0430, \u0430 \u043D\u0435 \u043D\u043E\u0443\u0442\u0431\u0443\u043A\u0443
+      \u0411\u0435\u043B\u043E\u0432\u0430."
+  - cardA: card_zotov
+    cardB: card_account
+    revealText: "\u0417\u043E\u0442\u043E\u0432 \u043A\u0430\u043A \u0430\u0434\u043C\u0438\u043D\u0438\u0441\u0442\u0440\u0430\u0442\u043E\u0440
+      \u043C\u043E\u0433 \u0441\u0431\u0440\u043E\u0441\u0438\u0442\u044C \u043F\u0430\u0440\u043E\u043B\u044C
+      \u043B\u044E\u0431\u043E\u0433\u043E \u0430\u043A\u043A\u0430\u0443\u043D\u0442\u0430
+      \u0438 \u0432\u043E\u0439\u0442\u0438 \u043F\u043E\u0434 \u0447\u0443\u0436\u0438\u043C
+      \u0438\u043C\u0435\u043D\u0435\u043C."
+  - cardA: card_zotov
+    cardB: card_50k
+    revealText: "\u0417\u043E\u0442\u043E\u0432 \u043E\u0444\u043E\u0440\u043C\u0438\u043B
+      \u043A\u0440\u0435\u0434\u0438\u0442 \u043D\u0430 $50,000 '\u043D\u0430 \u0440\u0435\u043C\u043E\u043D\u0442
+      \u0434\u043E\u043C\u0430'. \u041D\u0438 \u043E\u0434\u043D\u043E\u0433\u043E
+      \u0447\u0435\u043A\u0430. \u0414\u0435\u043D\u044C\u0433\u0438 \u043E\u0431\u043D\u0430\u043B\u0438\u0447\u0435\u043D\u044B."
+  - cardA: card_linguistics
+    cardB: card_zotov
+    revealText: "\u041B\u0438\u043D\u0433\u0432\u0438\u0441\u0442\u0438\u0447\u0435\u0441\u043A\u0438\u0439
+      \u0430\u043D\u0430\u043B\u0438\u0437 \u043F\u0435\u0440\u0435\u043F\u0438\u0441\u043A\u0438
+      \u043F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442 \u0442\u0435\u0440\u043C\u0438\u043D\u043E\u043B\u043E\u0433\u0438\u044E
+      \u0438\u0437 \u043E\u0442\u0447\u0451\u0442\u043E\u0432 \u0417\u043E\u0442\u043E\u0432\u0430."
+  - cardA: card_usb
+    cardB: card_zotov
+    revealText: "USB \u0437\u0430\u043F\u0438\u0441\u0430\u043D \u0432 02:15. \u041A\u0430\u043C\u0435\u0440\u0430
+      \u043F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442: \u0411\u0435\u043B\u043E\u0432
+      \u0443\u0435\u0445\u0430\u043B \u0432 22:30, \u0417\u043E\u0442\u043E\u0432
+      \u2014 \u0432 03:00."
+  - cardA: card_zotov
+    cardB: card_leak
+    revealText: "\u0417\u043E\u0442\u043E\u0432 \u0441\u0430\u043C \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u043B
+      \u0438 \u0441\u043E\u043E\u0431\u0449\u0438\u043B \u043E\u0431 \u0443\u0442\u0435\u0447\u043A\u0435.
+      \u041E\u0431\u044B\u0447\u043D\u043E \u0442\u043E\u0442 \u043A\u0442\u043E
+      \u043D\u0430\u0445\u043E\u0434\u0438\u0442 \u2014 \u043D\u0435 \u0432\u0438\u043D\u043E\u0432\u0430\u0442.
+      \u041D\u043E \u0443 \u043D\u0435\u0433\u043E \u0431\u044B\u043B \u043F\u043E\u043B\u043D\u044B\u0439
+      \u0434\u043E\u0441\u0442\u0443\u043F."
+  maxConnectionAttempts: 9
   arguments:
   - argumentId: arg_1
     text: "\u0414\u043E\u0441\u0442\u0443\u043F \u043A \u0431\u0430\u0437\u0435 \u043E\u0441\u0443\u0449\u0435\u0441\u0442\u0432\u043B\u0451\u043D
