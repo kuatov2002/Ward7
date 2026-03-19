@@ -94,8 +94,8 @@ public class GameManager : MonoBehaviour
         ServiceLocator.Register(_conseq);
         ServiceLocator.Register(_verdicts);
 
-        // Register all case data
-        Week1Data.Register(_cases);
+        // Load all cases from Resources/Suspects/
+        _cases.LoadAll();
 
         _screen = GameScreen.MainMenu;
     }
@@ -548,7 +548,7 @@ public class GameManager : MonoBehaviour
         {
             foreach (var fu in suspect.followUps)
             {
-                bool isThis = selectedFollowUp == fu.name;
+                bool isThis = selectedFollowUp == fu.followUpId;
                 GUILayout.BeginVertical(_boxStyle);
 
                 if (isThis)
@@ -561,7 +561,7 @@ public class GameManager : MonoBehaviour
                 {
                     if (GUILayout.Button(fu.question, _smallButtonStyle))
                     {
-                        _choices.Commit(suspect.suspectId, ChoiceType.FollowUp, fu.name);
+                        _choices.Commit(suspect.suspectId, ChoiceType.FollowUp, fu.followUpId);
                         _selectedFollowUpAnswer = fu.answer;
                     }
                 }

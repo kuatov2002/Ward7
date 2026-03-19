@@ -10,22 +10,57 @@ public class SuspectSO : ScriptableObject
 
     [Header("Monday - Dossier")]
     [TextArea(5, 20)] public string dossierText;
-    public ContactSO[] contacts;
+    public ContactData[] contacts;
 
     [Header("Tuesday - Evidence")]
-    public EvidenceSO[] evidence;
+    public EvidenceData[] evidence;
 
     [Header("Wednesday - Testimonies")]
-    public TestimonySO[] testimonies;
+    public TestimonyData[] testimonies;
 
     [Header("Thursday - Interrogation")]
     public InterrogationQA[] standardQuestions;
     public ConditionalInterrogationQA[] conditionalQuestions;
-    public FollowUpSO[] followUps;
+    public FollowUpData[] followUps;
 
     [Header("Consequences")]
     [TextArea(3, 10)] public string consequenceGuilty;
     [TextArea(3, 10)] public string consequenceNotGuilty;
+}
+
+// ─── Inline data classes ───
+
+[System.Serializable]
+public class ContactData
+{
+    public string contactId;
+    public string displayName;
+    [TextArea(3, 10)] public string response;
+}
+
+[System.Serializable]
+public class EvidenceData
+{
+    public string evidenceId;
+    public string title;
+    [TextArea(3, 10)] public string baseDescription;
+    [TextArea(3, 10)] public string expertDescription;
+}
+
+[System.Serializable]
+public class TestimonyData
+{
+    public string witnessName;
+    [TextArea(3, 10)] public string baseTestimony;
+    [TextArea(3, 10)] public string clarification;
+}
+
+[System.Serializable]
+public class FollowUpData
+{
+    public string followUpId;
+    [TextArea(2, 5)] public string question;
+    [TextArea(3, 10)] public string answer;
 }
 
 [System.Serializable]
