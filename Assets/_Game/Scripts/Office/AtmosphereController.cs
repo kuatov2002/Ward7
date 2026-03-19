@@ -1,8 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// Manages atmosphere: dust particles, day-based lighting, camera idle sway.
-/// </summary>
 public class AtmosphereController : MonoBehaviour
 {
     public static AtmosphereController Instance { get; private set; }
@@ -10,12 +7,6 @@ public class AtmosphereController : MonoBehaviour
     Light _dirLight;
     Light _deskLamp;
     ParticleSystem _dust;
-    Transform _camTransform;
-
-    // Idle sway
-    float _swayTime;
-    Vector3 _camBasePos;
-    Quaternion _camBaseRot;
 
     void Awake() => Instance = this;
 
@@ -23,23 +14,10 @@ public class AtmosphereController : MonoBehaviour
     {
         _dirLight = dirLight;
         _deskLamp = deskLamp;
-        _camTransform = cam;
-        _camBasePos = cam.position;
-        _camBaseRot = cam.rotation;
         CreateDustParticles();
     }
 
-    void Update()
-    {
-        if (_camTransform == null) return;
-        if (FirstPersonLook.Instance != null && UIManager.Instance != null && UIManager.Instance.IsPanelOpen)
-            return; // no sway when reading
-
-        _swayTime += Time.deltaTime;
-        float swayX = Mathf.Sin(_swayTime * 0.3f) * 0.002f;
-        float swayY = Mathf.Sin(_swayTime * 0.5f) * 0.001f;
-        _camTransform.position = _camBasePos + new Vector3(swayX, swayY, 0f);
-    }
+    // No camera sway in PSX style — camera is static
 
     public void SetDayLighting(int day)
     {
@@ -47,35 +25,36 @@ public class AtmosphereController : MonoBehaviour
 
         switch (day)
         {
-            case 0: // Monday morning intro
-            case 1: // Monday
-                _dirLight.color = new Color(0.95f, 0.9f, 0.8f);
-                _dirLight.intensity = 0.7f;
-                _deskLamp.intensity = 0.8f;
-                _deskLamp.color = new Color(1f, 0.95f, 0.8f);
-                break;
-            case 2: // Tuesday - daytime
-                _dirLight.color = new Color(0.9f, 0.9f, 0.9f);
-                _dirLight.intensity = 0.8f;
-                _deskLamp.intensity = 0.6f;
-                break;
-            case 3: // Wednesday - afternoon
-                _dirLight.color = new Color(1f, 0.85f, 0.7f);
-                _dirLight.intensity = 0.6f;
-                _deskLamp.intensity = 1f;
-                _deskLamp.color = new Color(1f, 0.9f, 0.7f);
-                break;
-            case 4: // Thursday - late afternoon
-                _dirLight.color = new Color(0.9f, 0.7f, 0.5f);
+            case 0:
+            case 1: // Monday - cold morning, greenish
+                _dirLight.color = new Color(0.6f, 0.65f, 0.55f);
                 _dirLight.intensity = 0.4f;
-                _deskLamp.intensity = 1.4f;
-                _deskLamp.color = new Color(1f, 0.85f, 0.6f);
+                _deskLamp.intensity = 1.2f;
+                _deskLamp.color = new Color(1f, 0.85f, 0.5f);
                 break;
-            case 5: // Friday - evening, tense
-                _dirLight.color = new Color(0.6f, 0.5f, 0.45f);
-                _dirLight.intensity = 0.25f;
+            case 2: // Tuesday - slightly warmer
+                _dirLight.color = new Color(0.65f, 0.6f, 0.5f);
+                _dirLight.intensity = 0.35f;
+                _deskLamp.intensity = 1.0f;
+                _deskLamp.color = new Color(1f, 0.9f, 0.6f);
+                break;
+            case 3: // Wednesday - amber afternoon
+                _dirLight.color = new Color(0.7f, 0.55f, 0.35f);
+                _dirLight.intensity = 0.3f;
+                _deskLamp.intensity = 1.4f;
+                _deskLamp.color = new Color(1f, 0.8f, 0.45f);
+                break;
+            case 4: // Thursday - dark, oppressive
+                _dirLight.color = new Color(0.5f, 0.4f, 0.3f);
+                _dirLight.intensity = 0.2f;
                 _deskLamp.intensity = 1.8f;
-                _deskLamp.color = new Color(1f, 0.8f, 0.5f);
+                _deskLamp.color = new Color(1f, 0.75f, 0.35f);
+                break;
+            case 5: // Friday - near dark, only lamp
+                _dirLight.color = new Color(0.35f, 0.3f, 0.25f);
+                _dirLight.intensity = 0.1f;
+                _deskLamp.intensity = 2.2f;
+                _deskLamp.color = new Color(1f, 0.7f, 0.3f);
                 break;
         }
     }
@@ -87,24 +66,23 @@ public class AtmosphereController : MonoBehaviour
         _dust = dustGo.AddComponent<ParticleSystem>();
 
         var main = _dust.main;
-        main.maxParticles = 40;
-        main.startLifetime = 10f;
-        main.startSpeed = 0.01f;
-        main.startSize = new ParticleSystem.MinMaxCurve(0.002f, 0.005f);
-        main.startColor = new Color(1f, 1f, 0.9f, 0.15f);
+        main.maxParticles = 25;
+        main.startLifetime = 12f;
+        main.startSpeed = 0.008f;
+        main.startSize = new ParticleSystem.MinMaxCurve(0.003f, 0.008f);
+        main.startColor = new Color(0.8f, 0.9f, 0.6f, 0.12f);
         main.simulationSpace = ParticleSystemSimulationSpace.World;
-        main.gravityModifier = -0.003f;
+        main.gravityModifier = -0.002f;
 
         var emission = _dust.emission;
-        emission.rateOverTime = 6f;
+        emission.rateOverTime = 3f;
 
         var shape = _dust.shape;
         shape.shapeType = ParticleSystemShapeType.Box;
         shape.scale = new Vector3(2f, 1f, 1.5f);
 
-        // Use default particle material — leave as is, Unity assigns a default
         var pRenderer = dustGo.GetComponent<ParticleSystemRenderer>();
         pRenderer.material = new Material(pRenderer.material);
-        pRenderer.material.color = new Color(1f, 1f, 0.9f, 0.3f);
+        pRenderer.material.color = new Color(0.7f, 0.8f, 0.5f, 0.15f);
     }
 }

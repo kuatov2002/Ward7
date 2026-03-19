@@ -15,24 +15,51 @@ public class DeskObject : MonoBehaviour
     public bool isCalendar;
 
     Renderer _renderer;
+    Renderer[] _allRenderers;
     Color _baseColor;
     bool _highlighted;
-    static readonly int EmissionColor = Shader.PropertyToID("_EmissionColor");
+    float _flickerTimer;
+    bool _flickerState;
 
     void Awake()
     {
         _renderer = GetComponentInChildren<Renderer>();
+        _allRenderers = GetComponentsInChildren<Renderer>();
         if (_renderer != null)
             _baseColor = _renderer.material.color;
+    }
+
+    void Update()
+    {
+        if (!_highlighted) return;
+
+        // PSX-style flicker highlight
+        _flickerTimer += Time.deltaTime;
+        if (_flickerTimer >= 0.08f)
+        {
+            _flickerTimer = 0f;
+            _flickerState = !_flickerState;
+            float mult = _flickerState ? 1.8f : 1.3f;
+            foreach (var r in _allRenderers)
+            {
+                if (r != null)
+                    r.material.color = _baseColor * mult;
+            }
+        }
     }
 
     public void SetHighlight(bool on)
     {
         if (_highlighted == on) return;
         _highlighted = on;
-        if (_renderer != null)
+        _flickerTimer = 0f;
+        if (!on)
         {
-            _renderer.material.color = on ? _baseColor * 1.5f : _baseColor;
+            foreach (var r in _allRenderers)
+            {
+                if (r != null)
+                    r.material.color = _baseColor;
+            }
         }
         var anim = GetComponent<DeskObjectAnimator>();
         if (anim != null) anim.SetHighlighted(on);
