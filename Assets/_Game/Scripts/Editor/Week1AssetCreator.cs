@@ -257,30 +257,51 @@ public static class Week1AssetCreator
         // ─── АРГУМЕНТЫ ───
         s.arguments = new ArgumentData[]
         {
-            new ArgumentData { argumentId = "arg_1", text = "Два пожара за 20 лет — подозрительный паттерн", supportsGuilty = true, weight = 1 },
-            new ArgumentData { argumentId = "arg_2", text = "Страховка вдвое выше стоимости склада", supportsGuilty = true, weight = 2 },
-            new ArgumentData { argumentId = "arg_3", text = "Личный долг $180,000 — мотив для поджога", supportsGuilty = true, weight = 1 },
-            new ArgumentData { argumentId = "arg_4", text = "Холлоуэй присутствовал на складе в ночь пожара", supportsGuilty = true, weight = 1 },
-            new ArgumentData { argumentId = "arg_5", text = "TechSolv-7 зарегистрирован только на компанию Саласа", supportsGuilty = false, weight = 3 },
-            new ArgumentData { argumentId = "arg_6", text = "Салас подал заявление о расторжении за 2 дня до пожара", supportsGuilty = false, weight = 2 },
-            new ArgumentData { argumentId = "arg_7", text = "Гомес звонил Саласу 7 раз за неделю — был информатором", supportsGuilty = false, weight = 2 },
-            new ArgumentData { argumentId = "arg_8", text = "Журнал пропусков ненадёжен после перезагрузки сервера", supportsGuilty = false, weight = 1 },
-            new ArgumentData { argumentId = "arg_9", text = "Холлоуэй платил шантажисту — скрывал прошлое", supportsGuilty = true, weight = 1 },
-            new ArgumentData { argumentId = "arg_10", text = "Бизнес стал прибыльным — нет смысла сжигать", supportsGuilty = false, weight = 2 }
+            new ArgumentData { argumentId = "arg_1", text = "Два пожара за 20 лет — подозрительный паттерн", supportsGuilty = true, weight = 1, alwaysVisible = true },
+            new ArgumentData { argumentId = "arg_2", text = "Страховка вдвое выше стоимости склада", supportsGuilty = true, weight = 2, alwaysVisible = true },
+            new ArgumentData { argumentId = "arg_3", text = "Личный долг $180,000 — мотив для поджога", supportsGuilty = true, weight = 1, alwaysVisible = true },
+            new ArgumentData { argumentId = "arg_4", text = "Холлоуэй присутствовал на складе в ночь пожара", supportsGuilty = true, weight = 1, alwaysVisible = true },
+            new ArgumentData { argumentId = "arg_5", text = "TechSolv-7 зарегистрирован только на компанию Саласа", supportsGuilty = false, weight = 3, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_firereport" },
+            new ArgumentData { argumentId = "arg_6", text = "Салас подал заявление о расторжении за 2 дня до пожара", supportsGuilty = false, weight = 2, requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Нэш" },
+            new ArgumentData { argumentId = "arg_7", text = "Гомес звонил Саласу 7 раз за неделю — был информатором", supportsGuilty = false, weight = 2, requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Нэш" },
+            new ArgumentData { argumentId = "arg_8", text = "Журнал пропусков ненадёжен после перезагрузки сервера", supportsGuilty = false, weight = 1, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_accesslog" },
+            new ArgumentData { argumentId = "arg_9", text = "Холлоуэй платил шантажисту — скрывал прошлое", supportsGuilty = true, weight = 1, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_bankstatement" },
+            new ArgumentData { argumentId = "arg_10", text = "Бизнес стал прибыльным — нет смысла сжигать", supportsGuilty = false, weight = 2, alwaysVisible = true }
         };
 
-        // Timeline events
-        s.timelineStartHour = 22f;
-        s.timelineEndHour = 2f;
-        s.timelineEvents = new TimelineEventData[]
+        // Timeline — chronology with contradictions to find
+        s.timelineEntries = new TimelineEntryData[]
         {
-            new TimelineEventData { eventId = "tl_salas_enter", description = "Салас вошёл на склад", correctHour = 22.75f, alwaysVisible = true },
-            new TimelineEventData { eventId = "tl_salas_exit", description = "Салас вышел со склада", correctHour = 23.083f, alwaysVisible = true },
-            new TimelineEventData { eventId = "tl_server_reboot", description = "Сервер перезагружен", correctHour = 23.167f, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_accesslog" },
-            new TimelineEventData { eventId = "tl_holloway_enter", description = "Холлоуэй вошёл на склад", correctHour = 23.233f, alwaysVisible = true },
-            new TimelineEventData { eventId = "tl_gomez_enter", description = "Гомес вошёл на склад", correctHour = 23.783f, alwaysVisible = true },
-            new TimelineEventData { eventId = "tl_fire_start", description = "Начало пожара", correctHour = 1.5f, alwaysVisible = true }
+            new TimelineEntryData { entryId = "tl_1", time = "22:45", description = "Салас вошёл на склад", source = "Журнал пропусков", alwaysVisible = true },
+            new TimelineEntryData { entryId = "tl_2", time = "~23:00", description = "Холлоуэй уехал со склада", source = "Сосед Холм", requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_holm" },
+            new TimelineEntryData { entryId = "tl_3", time = "23:05", description = "Салас вышел со склада", source = "Журнал пропусков", alwaysVisible = true },
+            new TimelineEntryData { entryId = "tl_4", time = "23:10", description = "Сервер перезагружен — данные после ненадёжны", source = "Экспертиза журнала", requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_accesslog" },
+            new TimelineEntryData { entryId = "tl_5", time = "23:14", description = "Холлоуэй вошёл на склад (запись после перезагрузки)", source = "Журнал пропусков", alwaysVisible = true },
+            new TimelineEntryData { entryId = "tl_6", time = "~22:30", description = "Тёмная машина подъехала к складу", source = "Сосед Холм", requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_holm" },
+            new TimelineEntryData { entryId = "tl_7", time = "23:47", description = "Гомес вошёл на склад", source = "Журнал пропусков", alwaysVisible = true },
+            new TimelineEntryData { entryId = "tl_8", time = "01:30", description = "Начало пожара", source = "Пожарная служба", alwaysVisible = true },
+            new TimelineEntryData { entryId = "tl_9", time = "~23:00", description = "Холлоуэй был дома, разговаривал с женой", source = "Линда Холлоуэй", requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_linda" }
         };
+
+        s.timelineContradictions = new TimelineContradictionData[]
+        {
+            new TimelineContradictionData
+            {
+                entryA = "tl_2", entryB = "tl_5",
+                explanation = "Сосед видел как Холлоуэй уехал около 23:00. Но журнал фиксирует вход Холлоуэя в 23:14. Либо он вернулся, либо запись после перезагрузки ненадёжна."
+            },
+            new TimelineContradictionData
+            {
+                entryA = "tl_4", entryB = "tl_5",
+                explanation = "Сервер перезагружен в 23:10 — все записи после этого времени могут быть некорректны. Вход Холлоуэя в 23:14 технически недостоверен."
+            },
+            new TimelineContradictionData
+            {
+                entryA = "tl_9", entryB = "tl_5",
+                explanation = "Линда утверждает что Холлоуэй был дома около 23:00. Журнал показывает его вход на склад в 23:14. Показания жены — заинтересованного свидетеля."
+            }
+        };
+        s.maxContradictionAttempts = 5;
 
         // Connection board
         s.connectionCards = new ConnectionCardData[]

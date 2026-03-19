@@ -3,14 +3,17 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+/// <summary>
+/// Timeline panel: shows a pre-built chronology of events.
+/// Player must find contradictions by clicking pairs of events that don't add up.
+/// </summary>
 public class TimelineUI : MonoBehaviour, IPanelController
 {
     const string PanelName = "timeline-panel";
-    const float SlotInterval = 0.5f; // 30-minute slots (bigger, easier to click)
-    const float Tolerance = 0.55f; // ±33 minutes tolerance
 
-    readonly Dictionary<string, float> _placements = new();
-    string _selectedEventId;
+    string _selectedEntry;
+    readonly List<string> _found = new();
+    int _attemptsUsed;
 
     void Start()
     {
@@ -19,16 +22,11 @@ public class TimelineUI : MonoBehaviour, IPanelController
 
     public void OnShow()
     {
-        _placements.Clear();
         var save = ServiceLocator.Get<SaveService>();
-        foreach (var p in save.Data.timelinePlacements)
-        {
-            var parts = p.Split(':');
-            if (parts.Length == 2 && float.TryParse(parts[1], System.Globalization.NumberStyles.Float,
-                System.Globalization.CultureInfo.InvariantCulture, out float h))
-                _placements[parts[0]] = h;
-        }
-        _selectedEventId = null;
+        _found.Clear();
+        _found.AddRange(save.Data.foundContradictions);
+        _attemptsUsed = save.Data.contradictionAttemptsUsed;
+        _selectedEntry = null;
         BuildPanel();
     }
 
@@ -42,16 +40,15 @@ public class TimelineUI : MonoBehaviour, IPanelController
         var choices = ServiceLocator.Get<DailyChoiceService>();
         var state = ServiceLocator.Get<GameStateService>();
         var s = cases.ActiveCase;
-        if (s == null || s.timelineEvents == null || s.timelineEvents.Length == 0) return;
+        if (s == null || s.timelineEntries == null || s.timelineEntries.Length == 0) return;
         int w = state.CurrentWeek;
 
-        // Filter to only discovered events
-        var discoveredEvents = new List<TimelineEventData>();
-        foreach (var ev in s.timelineEvents)
+        // Filter visible entries
+        var visible = new List<TimelineEntryData>();
+        foreach (var e in s.timelineEntries)
         {
-            if (DiscoveryHelper.IsDiscovered(ev.alwaysVisible, ev.requiredChoiceType,
-                ev.requiredChoiceId, w, choices))
-                discoveredEvents.Add(ev);
+            if (DiscoveryHelper.IsDiscovered(e.alwaysVisible, e.requiredChoiceType, e.requiredChoiceId, w, choices))
+                visible.Add(e);
         }
 
         // Close row
@@ -67,239 +64,198 @@ public class TimelineUI : MonoBehaviour, IPanelController
         title.AddToClassList("header");
         panel.Add(title);
 
-        if (discoveredEvents.Count == 0)
-        {
-            var noData = new Label("Недостаточно данных. Соберите больше улик и показаний.");
-            noData.AddToClassList("text");
-            noData.AddToClassList("text-dim");
-            panel.Add(noData);
-            return;
-        }
+        int totalContr = s.timelineContradictions != null ? s.timelineContradictions.Length : 0;
+        int remaining = s.maxContradictionAttempts - _attemptsUsed;
 
-        var sub = new Label(_selectedEventId != null
-            ? "Теперь кликните на временной слот для размещения."
-            : "Выберите событие, затем кликните на шкале времени.");
+        var sub = new Label(_selectedEntry != null
+            ? "Выберите второе событие которое противоречит первому."
+            : "Изучите хронологию. Найдите пары событий которые не могут быть правдой одновременно.");
         sub.AddToClassList("text");
         sub.AddToClassList("text-dim");
         panel.Add(sub);
 
-        int correct = CountCorrect(s, discoveredEvents);
-        var score = new Label($"Размещено: {_placements.Count}/{discoveredEvents.Count}  |  Верно: {correct}");
-        score.AddToClassList("text");
-        score.AddToClassList("text-amber");
-        panel.Add(score);
+        var info = new Label($"Нестыковок найдено: {_found.Count}/{totalContr}  |  Попыток осталось: {remaining}");
+        info.AddToClassList("text");
+        info.AddToClassList("text-amber");
+        panel.Add(info);
 
         panel.Add(Spacer(8));
 
-        // ─── EVENT CARDS (select one) ───
-        var cardRow = new VisualElement();
-        cardRow.style.flexDirection = FlexDirection.Row;
-        cardRow.style.flexWrap = Wrap.Wrap;
-        cardRow.style.marginBottom = 8;
+        // ─── TIMELINE ENTRIES ───
+        var scroll = new ScrollView(ScrollViewMode.Vertical);
+        scroll.style.maxHeight = 400;
+        scroll.style.flexGrow = 1;
 
-        foreach (var ev in discoveredEvents)
+        foreach (var entry in visible)
         {
-            bool placed = _placements.ContainsKey(ev.eventId);
-            bool selected = _selectedEventId == ev.eventId;
+            bool isSelected = _selectedEntry == entry.entryId;
+            bool isPartOfFound = IsInFoundContradiction(entry.entryId);
 
-            var cardBtn = new Button(() => {
-                _selectedEventId = (_selectedEventId == ev.eventId) ? null : ev.eventId;
-                BuildPanel();
-            });
-            cardBtn.text = ev.description;
-            cardBtn.AddToClassList("timeline-card");
+            var row = new VisualElement();
+            row.style.flexDirection = FlexDirection.Row;
+            row.style.marginBottom = 3;
+            row.style.paddingLeft = 4;
+            row.style.paddingRight = 4;
+            row.style.paddingTop = 6;
+            row.style.paddingBottom = 6;
+            row.style.backgroundColor = isSelected
+                ? new Color(0.15f, 0.3f, 0.15f)
+                : isPartOfFound
+                    ? new Color(0.25f, 0.1f, 0.1f)
+                    : new Color(0.03f, 0.06f, 0.03f);
+            row.style.borderLeftWidth = 3;
+            row.style.borderLeftColor = isPartOfFound
+                ? new Color(0.8f, 0.3f, 0.3f)
+                : new Color(0.15f, 0.3f, 0.15f);
 
-            if (selected)
-                cardBtn.AddToClassList("timeline-card-selected");
-            else if (placed)
+            // Time label
+            var timeLbl = new Label(entry.time);
+            timeLbl.AddToClassList("text-bold");
+            timeLbl.style.width = 55;
+            timeLbl.style.color = new Color(0.5f, 0.9f, 0.5f);
+            timeLbl.style.flexShrink = 0;
+            row.Add(timeLbl);
+
+            // Description (clickable)
+            string eid = entry.entryId;
+            var descBtn = new Button(() => OnEntryClicked(eid, s));
+            descBtn.text = entry.description;
+            descBtn.AddToClassList("timeline-entry-btn");
+            if (isSelected)
+                descBtn.AddToClassList("timeline-entry-selected");
+            descBtn.SetEnabled(remaining > 0 || _selectedEntry != null);
+            row.Add(descBtn);
+
+            // Source tag
+            if (!string.IsNullOrEmpty(entry.source))
             {
-                bool isOk = IsPlacementCorrect(ev);
-                cardBtn.AddToClassList(isOk ? "timeline-card-correct" : "timeline-card-placed");
+                var srcLbl = new Label(entry.source);
+                srcLbl.AddToClassList("text-small");
+                srcLbl.style.color = new Color(0.3f, 0.5f, 0.3f);
+                srcLbl.style.flexShrink = 0;
+                srcLbl.style.marginLeft = 8;
+                srcLbl.style.alignSelf = Align.Center;
+                row.Add(srcLbl);
             }
 
-            cardRow.Add(cardBtn);
+            scroll.Add(row);
         }
-        panel.Add(cardRow);
 
-        // ─── TIMELINE SCALE ───
-        float startH = s.timelineStartHour;
-        float endH = s.timelineEndHour;
-        if (endH < startH) endH += 24f;
-        float totalHours = endH - startH;
-        int slotCount = Mathf.RoundToInt(totalHours / SlotInterval);
+        panel.Add(scroll);
 
-        var timelineBox = new VisualElement();
-        timelineBox.style.backgroundColor = new Color(0.02f, 0.04f, 0.02f);
-        timelineBox.style.paddingTop = 6;
-        timelineBox.style.paddingBottom = 6;
-        timelineBox.style.paddingLeft = 4;
-        timelineBox.style.paddingRight = 4;
-        timelineBox.style.borderTopWidth = timelineBox.style.borderBottomWidth = 1;
-        timelineBox.style.borderTopColor = timelineBox.style.borderBottomColor = new Color(0.15f, 0.3f, 0.15f);
-
-        // Hour labels
-        var hourRow = new VisualElement();
-        hourRow.style.flexDirection = FlexDirection.Row;
-        for (float h = Mathf.Floor(startH); h <= Mathf.Ceil(endH); h += 1f)
+        // ─── FOUND CONTRADICTIONS ───
+        if (_found.Count > 0)
         {
-            float displayH = h >= 24f ? h - 24f : h;
-            var lbl = new Label($"{(int)displayH:00}:00");
-            lbl.AddToClassList("text-small");
-            lbl.style.flexGrow = 1;
-            lbl.style.unityTextAlign = TextAnchor.MiddleCenter;
-            lbl.style.color = new Color(0.3f, 0.6f, 0.3f);
-            hourRow.Add(lbl);
-        }
-        timelineBox.Add(hourRow);
+            panel.Add(Spacer(10));
+            var foundHeader = new Label("ОБНАРУЖЕННЫЕ НЕСТЫКОВКИ:");
+            foundHeader.AddToClassList("text-bold");
+            foundHeader.AddToClassList("text-red");
+            panel.Add(foundHeader);
+            panel.Add(Spacer(4));
 
-        // Slot row
-        var slotRow = new VisualElement();
-        slotRow.style.flexDirection = FlexDirection.Row;
-        slotRow.style.height = 55;
-
-        for (int i = 0; i < slotCount; i++)
-        {
-            float rawHour = startH + i * SlotInterval;
-            float slotHour = rawHour >= 24f ? rawHour - 24f : rawHour;
-
-            var slot = new VisualElement();
-            slot.style.flexGrow = 1;
-            slot.style.height = 55;
-            slot.style.borderRightWidth = 1;
-            slot.style.borderRightColor = (i % 2 == 1)
-                ? new Color(0.12f, 0.22f, 0.12f)
-                : new Color(0.06f, 0.12f, 0.06f);
-            slot.style.backgroundColor = new Color(0.03f, 0.06f, 0.03f);
-
-            // Highlight on hover
-            slot.RegisterCallback<PointerEnterEvent>(evt => {
-                if (_selectedEventId != null)
-                    ((VisualElement)evt.target).style.backgroundColor = new Color(0.08f, 0.15f, 0.08f);
-            });
-            slot.RegisterCallback<PointerLeaveEvent>(evt => {
-                ((VisualElement)evt.target).style.backgroundColor = new Color(0.03f, 0.06f, 0.03f);
-            });
-
-            // Check if event placed here
-            var placedHere = _placements.FirstOrDefault(p => Mathf.Abs(p.Value - slotHour) < 0.01f);
-            if (!string.IsNullOrEmpty(placedHere.Key))
+            foreach (var pair in _found)
             {
-                var ev = discoveredEvents.FirstOrDefault(e => e.eventId == placedHere.Key);
-                if (ev == null) ev = s.timelineEvents.FirstOrDefault(e => e.eventId == placedHere.Key);
-                if (ev != null)
-                {
-                    bool ok = IsPlacementCorrect(ev);
-                    slot.style.backgroundColor = ok
-                        ? new Color(0.08f, 0.25f, 0.08f)
-                        : new Color(0.3f, 0.25f, 0.04f);
+                var parts = pair.Split('|');
+                if (parts.Length != 2) continue;
+                var contr = FindContradiction(parts[0], parts[1], s);
+                if (contr == null) continue;
 
-                    var evLbl = new Label(Truncate(ev.description, 16));
-                    evLbl.AddToClassList("text-small");
-                    evLbl.style.color = ok ? new Color(0.4f, 1f, 0.4f) : new Color(1f, 0.9f, 0.3f);
-                    evLbl.style.unityTextAlign = TextAnchor.MiddleCenter;
-                    evLbl.style.whiteSpace = WhiteSpace.Normal;
-                    evLbl.style.fontSize = 10;
-                    slot.Add(evLbl);
-                }
+                var entryA = GetEntry(parts[0], s);
+                var entryB = GetEntry(parts[1], s);
+                if (entryA == null || entryB == null) continue;
+
+                var box = new VisualElement();
+                box.AddToClassList("box");
+                box.style.borderLeftWidth = 3;
+                box.style.borderLeftColor = new Color(0.8f, 0.3f, 0.3f);
+
+                var pairLbl = new Label($"{entryA.time} {entryA.description}  \u2260  {entryB.time} {entryB.description}");
+                pairLbl.AddToClassList("text-bold");
+                pairLbl.style.color = new Color(1f, 0.5f, 0.4f);
+                box.Add(pairLbl);
+
+                var explLbl = new Label(contr.explanation);
+                explLbl.AddToClassList("text");
+                box.Add(explLbl);
+
+                panel.Add(box);
             }
-
-            // Half-hour label at bottom
-            int mins = (int)((slotHour % 1f) * 60f);
-            int hrs = (int)slotHour;
-            var timeLbl = new Label($"{hrs:00}:{mins:00}");
-            timeLbl.style.fontSize = 8;
-            timeLbl.style.color = new Color(0.2f, 0.4f, 0.2f);
-            timeLbl.style.unityTextAlign = TextAnchor.LowerCenter;
-            timeLbl.style.position = Position.Absolute;
-            timeLbl.style.bottom = 1;
-            timeLbl.style.left = 0;
-            timeLbl.style.right = 0;
-            slot.Add(timeLbl);
-
-            float capturedHour = slotHour;
-            slot.RegisterCallback<ClickEvent>(evt => OnSlotClicked(capturedHour, s, discoveredEvents));
-            slotRow.Add(slot);
         }
-
-        timelineBox.Add(slotRow);
-        panel.Add(timelineBox);
-
-        // Reset button
-        panel.Add(Spacer(8));
-        var row = new VisualElement();
-        row.style.flexDirection = FlexDirection.Row;
-
-        var resetBtn = new Button(() => {
-            _placements.Clear();
-            var sv = ServiceLocator.Get<SaveService>();
-            sv.Data.timelinePlacements.Clear();
-            sv.Save();
-            BuildPanel();
-        });
-        resetBtn.text = "СБРОСИТЬ";
-        resetBtn.AddToClassList("btn-small");
-        resetBtn.style.color = new Color(0.8f, 0.3f, 0.3f);
-        row.Add(resetBtn);
-
-        panel.Add(row);
     }
 
-    void OnSlotClicked(float hour, SuspectSO s, List<TimelineEventData> discovered)
+    void OnEntryClicked(string entryId, SuspectSO s)
     {
-        if (string.IsNullOrEmpty(_selectedEventId)) return;
+        if (_selectedEntry == null)
+        {
+            _selectedEntry = entryId;
+            BuildPanel();
+            return;
+        }
 
-        _placements.Remove(_selectedEventId);
-        var existing = _placements.FirstOrDefault(p => Mathf.Abs(p.Value - hour) < 0.01f);
-        if (!string.IsNullOrEmpty(existing.Key))
-            _placements.Remove(existing.Key);
+        if (_selectedEntry == entryId)
+        {
+            _selectedEntry = null;
+            BuildPanel();
+            return;
+        }
 
-        _placements[_selectedEventId] = hour;
-        _selectedEventId = null;
+        // Try pair
+        string pairKey = MakePairKey(_selectedEntry, entryId);
+        _selectedEntry = null;
 
-        SavePlacements();
+        if (_found.Contains(pairKey))
+        {
+            BuildPanel();
+            return;
+        }
 
-        if (ProceduralAudio.Instance != null)
-            ProceduralAudio.Instance.PlayPaperFlip();
+        _attemptsUsed++;
+        var save = ServiceLocator.Get<SaveService>();
+        save.Data.contradictionAttemptsUsed = _attemptsUsed;
 
+        var contr = FindContradiction(pairKey.Split('|')[0], pairKey.Split('|')[1], s);
+        if (contr != null)
+        {
+            _found.Add(pairKey);
+            save.Data.foundContradictions.Add(pairKey);
+            if (ProceduralAudio.Instance != null)
+                ProceduralAudio.Instance.PlayPaperFlip();
+        }
+        else
+        {
+            if (ProceduralAudio.Instance != null)
+                ProceduralAudio.Instance.PlayStamp();
+        }
+
+        save.Save();
         BuildPanel();
     }
 
-    void SavePlacements()
+    bool IsInFoundContradiction(string entryId)
     {
-        var save = ServiceLocator.Get<SaveService>();
-        save.Data.timelinePlacements.Clear();
-        foreach (var kv in _placements)
-            save.Data.timelinePlacements.Add(
-                $"{kv.Key}:{kv.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
-        save.Save();
+        return _found.Any(p => p.Contains(entryId));
     }
 
-    bool IsPlacementCorrect(TimelineEventData ev)
+    public int GetFoundCount() => _found.Count;
+
+    static string MakePairKey(string a, string b)
     {
-        if (!_placements.TryGetValue(ev.eventId, out float placed)) return false;
-        return Mathf.Abs(NormHour(ev.correctHour) - NormHour(placed)) < Tolerance;
+        return string.Compare(a, b) < 0 ? $"{a}|{b}" : $"{b}|{a}";
     }
 
-    public int CountCorrect(SuspectSO s, List<TimelineEventData> discovered = null)
+    static TimelineContradictionData FindContradiction(string a, string b, SuspectSO s)
     {
-        var events = discovered ?? s.timelineEvents?.ToList() ?? new List<TimelineEventData>();
-        int count = 0;
-        foreach (var ev in events)
-            if (IsPlacementCorrect(ev)) count++;
-        return count;
+        if (s.timelineContradictions == null) return null;
+        return s.timelineContradictions.FirstOrDefault(c =>
+            (c.entryA == a && c.entryB == b) || (c.entryA == b && c.entryB == a));
     }
 
-    static float NormHour(float h)
+    static TimelineEntryData GetEntry(string id, SuspectSO s)
     {
-        while (h < 0) h += 24f;
-        while (h >= 24f) h -= 24f;
-        return h;
+        return s.timelineEntries?.FirstOrDefault(e => e.entryId == id);
     }
 
-    static string Truncate(string t, int m) =>
-        string.IsNullOrEmpty(t) || t.Length <= m ? t : t.Substring(0, m) + "..";
-
-    public void OnHide() { _selectedEventId = null; }
+    public void OnHide() { _selectedEntry = null; }
 
     static VisualElement Spacer(int h = 10)
     {

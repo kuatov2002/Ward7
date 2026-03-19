@@ -27,10 +27,10 @@ public class SuspectSO : ScriptableObject
     [Tooltip("Pressure at which suspect shuts down (0 = no pressure system)")]
     public int pressureThreshold = 5;
 
-    [Header("Timeline Reconstruction")]
-    public TimelineEventData[] timelineEvents;
-    public float timelineStartHour = 22f;
-    public float timelineEndHour = 2f;
+    [Header("Timeline — Find Contradictions")]
+    public TimelineEntryData[] timelineEntries;
+    public TimelineContradictionData[] timelineContradictions;
+    public int maxContradictionAttempts = 5;
 
     [Header("Connection Board")]
     public ConnectionCardData[] connectionCards;
@@ -127,20 +127,35 @@ public class ArgumentData
     [TextArea(1, 3)] public string text;
     public bool supportsGuilty;
     [Range(1, 3)] public int weight = 1;
+    public bool alwaysVisible;
+    public ChoiceType requiredChoiceType;
+    public string requiredChoiceId;
 }
 
+/// <summary>
+/// A single entry on the pre-built timeline the player reads.
+/// </summary>
 [System.Serializable]
-public class TimelineEventData
+public class TimelineEntryData
 {
-    public string eventId;
-    public string description;
-    public float correctHour; // 23.083 = 23:05, 1.5 = 01:30
-    [Tooltip("Discovery gate: ChoiceType that must be made to reveal this event. None = always visible.")]
-    public ChoiceType requiredChoiceType;
-    [Tooltip("Specific choiceId required, or empty = any choice of that type reveals it.")]
-    public string requiredChoiceId;
-    [Tooltip("If true, event is always visible (no gate)")]
+    public string entryId;
+    public string time;         // display string: "23:05"
+    public string description;  // "Салас вышел со склада"
+    public string source;       // "Журнал пропусков" — shown as tag
     public bool alwaysVisible;
+    public ChoiceType requiredChoiceType;
+    public string requiredChoiceId;
+}
+
+/// <summary>
+/// A contradiction the player must find — two timeline entries that don't add up.
+/// </summary>
+[System.Serializable]
+public class TimelineContradictionData
+{
+    public string entryA;       // entryId of first event
+    public string entryB;       // entryId of second event
+    [TextArea(1, 3)] public string explanation; // why these contradict
 }
 
 [System.Serializable]

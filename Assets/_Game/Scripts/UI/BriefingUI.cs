@@ -126,13 +126,36 @@ public class BriefingUI : MonoBehaviour, IPanelController
             instrLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
             panel.Add(instrLabel);
 
+            // Show investigation bonus info
             panel.Add(Spacer(10));
 
             var argsScroll = new ScrollView(ScrollViewMode.Vertical);
             argsScroll.style.maxHeight = 300;
 
+            var choices = ServiceLocator.Get<DailyChoiceService>();
+            int availableCount = 0;
+            int lockedCount = 0;
+
             foreach (var arg in s.arguments)
             {
+                bool discovered = DiscoveryHelper.IsDiscovered(
+                    arg.alwaysVisible, arg.requiredChoiceType, arg.requiredChoiceId, w, choices);
+
+                if (!discovered)
+                {
+                    lockedCount++;
+                    var lockedBox = new VisualElement();
+                    lockedBox.AddToClassList("box");
+                    lockedBox.style.opacity = 0.3f;
+                    var lockLbl = new Label("??? [Факт не раскрыт]");
+                    lockLbl.AddToClassList("text");
+                    lockLbl.AddToClassList("text-dim");
+                    lockedBox.Add(lockLbl);
+                    argsScroll.Add(lockedBox);
+                    continue;
+                }
+
+                availableCount++;
                 bool isSelected = _selectedArgs.Contains(arg.argumentId);
                 var box = new VisualElement();
                 box.AddToClassList("box");
@@ -164,7 +187,18 @@ public class BriefingUI : MonoBehaviour, IPanelController
             }
 
             panel.Add(argsScroll);
-            panel.Add(Spacer(10));
+            panel.Add(Spacer(5));
+
+            if (lockedCount > 0)
+            {
+                var lockInfo = new Label($"Скрыто доводов: {lockedCount} (не все факты раскрыты в ходе расследования)");
+                lockInfo.AddToClassList("text-small");
+                lockInfo.AddToClassList("text-red");
+                lockInfo.style.unityTextAlign = TextAnchor.MiddleCenter;
+                panel.Add(lockInfo);
+            }
+
+            panel.Add(Spacer(5));
 
             var countLabel = new Label($"Выбрано: {_selectedArgs.Count}/{MaxArguments}");
             countLabel.AddToClassList("text");

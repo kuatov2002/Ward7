@@ -52,7 +52,8 @@ public class SaveData
     public bool bluffFailed;
     public List<string> foundConnections = new(); // "cardA|cardB" pairs
     public int connectionAttemptsUsed;
-    public List<string> timelinePlacements = new(); // "eventId:placedHour"
+    public List<string> foundContradictions = new(); // "entryA|entryB"
+    public int contradictionAttemptsUsed;
 }
 
 public class SaveService

@@ -168,30 +168,51 @@ public static class Week2AssetCreator
 
         s.arguments = new ArgumentData[]
         {
-            new ArgumentData { argumentId = "arg_1", text = "Страховка на $800,000 оформлена за 2 месяца до смерти", supportsGuilty = true, weight = 2 },
-            new ArgumentData { argumentId = "arg_2", text = "Этиленгликоль поступал систематически 2-3 недели", supportsGuilty = true, weight = 3 },
-            new ArgumentData { argumentId = "arg_3", text = "Новый партнёр Орлов — мотив для устранения мужа", supportsGuilty = true, weight = 1 },
-            new ArgumentData { argumentId = "arg_4", text = "Антифриз куплен Еленой — камера магазина", supportsGuilty = true, weight = 2 },
-            new ArgumentData { argumentId = "arg_5", text = "Андрей был алкоголиком и поднимал руку", supportsGuilty = false, weight = 1 },
-            new ArgumentData { argumentId = "arg_6", text = "Бутылка антифриза в гараже не вскрывалась", supportsGuilty = true, weight = 2 },
-            new ArgumentData { argumentId = "arg_7", text = "Дочь Виктория заинтересована в наследстве", supportsGuilty = false, weight = 1 },
-            new ArgumentData { argumentId = "arg_8", text = "Елена говорит 'скоро всё закончится' — о разводе", supportsGuilty = false, weight = 1 },
-            new ArgumentData { argumentId = "arg_9", text = "Марина подтверждает — антифриз был для её машины", supportsGuilty = false, weight = 1 },
-            new ArgumentData { argumentId = "arg_10", text = "У Марины нет машины — алиби Елены не совпадает", supportsGuilty = true, weight = 2 }
+            new ArgumentData { argumentId = "arg_1", text = "Страховка на $800,000 оформлена за 2 месяца до смерти", supportsGuilty = true, weight = 2, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_insurance" },
+            new ArgumentData { argumentId = "arg_2", text = "Этиленгликоль поступал систематически 2-3 недели", supportsGuilty = true, weight = 3, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_medical" },
+            new ArgumentData { argumentId = "arg_3", text = "Новый партнёр Орлов — мотив для устранения мужа", supportsGuilty = true, weight = 1, requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_orlov" },
+            new ArgumentData { argumentId = "arg_4", text = "Антифриз куплен Еленой — камера магазина", supportsGuilty = true, weight = 2, requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Коул" },
+            new ArgumentData { argumentId = "arg_5", text = "Андрей был алкоголиком и поднимал руку", supportsGuilty = false, weight = 1, alwaysVisible = true },
+            new ArgumentData { argumentId = "arg_6", text = "Бутылка антифриза в гараже не вскрывалась", supportsGuilty = true, weight = 2, requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Пэйдж" },
+            new ArgumentData { argumentId = "arg_7", text = "Дочь Виктория заинтересована в наследстве", supportsGuilty = false, weight = 1, requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Нэш" },
+            new ArgumentData { argumentId = "arg_8", text = "Елена говорит 'скоро всё закончится' — о разводе", supportsGuilty = false, weight = 1, requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_orlov" },
+            new ArgumentData { argumentId = "arg_9", text = "Марина подтверждает — антифриз был для её машины", supportsGuilty = false, weight = 1, requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_marina" },
+            new ArgumentData { argumentId = "arg_10", text = "У Марины нет машины — алиби Елены не совпадает", supportsGuilty = true, weight = 2, requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_victoria" }
         };
 
-        // Timeline events
-        s.timelineStartHour = 18f;
-        s.timelineEndHour = 24f;
-        s.timelineEvents = new TimelineEventData[]
+        // Timeline — chronology with contradictions
+        s.timelineEntries = new TimelineEntryData[]
         {
-            new TimelineEventData { eventId = "tl_elena_home", description = "Елена вернулась домой", correctHour = 18.5f, alwaysVisible = true },
-            new TimelineEventData { eventId = "tl_andrei_drink", description = "Андрей начал пить виски", correctHour = 19f, alwaysVisible = true },
-            new TimelineEventData { eventId = "tl_elena_call", description = "Елена звонила Орлову", correctHour = 20f, requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Нэш" },
-            new TimelineEventData { eventId = "tl_andrei_sick", description = "Андрей почувствовал тошноту", correctHour = 21.5f, requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_semenov" },
-            new TimelineEventData { eventId = "tl_elena_sleep", description = "Елена легла спать", correctHour = 22.5f, alwaysVisible = true },
-            new TimelineEventData { eventId = "tl_andrei_collapse", description = "Андрей потерял сознание", correctHour = 23.5f, alwaysVisible = true }
+            new TimelineEntryData { entryId = "tl_1", time = "18:30", description = "Елена вернулась с работы", source = "Показания Елены", alwaysVisible = true },
+            new TimelineEntryData { entryId = "tl_2", time = "~19:00", description = "Андрей начал пить виски", source = "Медицинское заключение", alwaysVisible = true },
+            new TimelineEntryData { entryId = "tl_3", time = "~19:30", description = "Елена говорит что готовила ужин", source = "Показания Елены", alwaysVisible = true },
+            new TimelineEntryData { entryId = "tl_4", time = "20:00", description = "Елена звонила Орлову: 'Скоро всё закончится'", source = "Нэш — телефонные записи", requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Нэш" },
+            new TimelineEntryData { entryId = "tl_5", time = "~21:00", description = "Андрей жаловался на тошноту врачу за 2 недели до смерти", source = "Доктор Семёнов", requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_semenov" },
+            new TimelineEntryData { entryId = "tl_6", time = "22:30", description = "Елена легла спать", source = "Показания Елены", alwaysVisible = true },
+            new TimelineEntryData { entryId = "tl_7", time = "~22:00", description = "Елена купила антифриз 'для машины подруги'", source = "Камера магазина", requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Коул" },
+            new TimelineEntryData { entryId = "tl_8", time = "23:30", description = "Андрей потерял сознание", source = "Медицинское заключение", alwaysVisible = true },
+            new TimelineEntryData { entryId = "tl_9", time = "~18:00", description = "Марина утверждает что попросила купить антифриз", source = "Показания Марины", requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_marina" }
         };
+
+        s.timelineContradictions = new TimelineContradictionData[]
+        {
+            new TimelineContradictionData
+            {
+                entryA = "tl_7", entryB = "tl_9",
+                explanation = "Елена говорит антифриз для машины Марины. Но у Марины нет машины. Алиби не совпадает."
+            },
+            new TimelineContradictionData
+            {
+                entryA = "tl_4", entryB = "tl_6",
+                explanation = "В 20:00 Елена говорит Орлову 'скоро всё закончится'. В 22:30 она 'легла спать'. Если речь о разводе — зачем такая спешка?"
+            },
+            new TimelineContradictionData
+            {
+                entryA = "tl_5", entryB = "tl_2",
+                explanation = "Андрей жаловался на тошноту за 2 недели. Хроническое отравление началось задолго до этого вечера — это не одноразовый инцидент."
+            }
+        };
+        s.maxContradictionAttempts = 5;
 
         // Connection board
         s.connectionCards = new ConnectionCardData[]

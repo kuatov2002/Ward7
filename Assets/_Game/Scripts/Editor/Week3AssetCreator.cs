@@ -170,30 +170,50 @@ public static class Week3AssetCreator
 
         s.arguments = new ArgumentData[]
         {
-            new ArgumentData { argumentId = "arg_1", text = "Доступ к базе осуществлён с учётной записи Белова", supportsGuilty = true, weight = 1 },
-            new ArgumentData { argumentId = "arg_2", text = "USB-накопитель с данными найден в столе Белова", supportsGuilty = true, weight = 1 },
-            new ArgumentData { argumentId = "arg_3", text = "Белов задерживался допоздна — имел возможность", supportsGuilty = true, weight = 1 },
-            new ArgumentData { argumentId = "arg_4", text = "MAC-адрес в логах принадлежит рабочей станции Зотова", supportsGuilty = false, weight = 3 },
-            new ArgumentData { argumentId = "arg_5", text = "Файлы записаны в 02:15 — Белов уехал в 22:30", supportsGuilty = false, weight = 2 },
-            new ArgumentData { argumentId = "arg_6", text = "У Белова нет подозрительных денежных поступлений", supportsGuilty = false, weight = 2 },
-            new ArgumentData { argumentId = "arg_7", text = "Зотов обналичил $50,000 без чеков за стройматериалы", supportsGuilty = false, weight = 2 },
-            new ArgumentData { argumentId = "arg_8", text = "Лингвистический анализ указывает на терминологию Зотова", supportsGuilty = false, weight = 2 },
-            new ArgumentData { argumentId = "arg_9", text = "Стиль переписки похож на Белова (технический жаргон)", supportsGuilty = true, weight = 1 },
-            new ArgumentData { argumentId = "arg_10", text = "Зотов имел полный доступ как администратор системы", supportsGuilty = false, weight = 2 }
+            new ArgumentData { argumentId = "arg_1", text = "Доступ к базе осуществлён с учётной записи Белова", supportsGuilty = true, weight = 1, alwaysVisible = true },
+            new ArgumentData { argumentId = "arg_2", text = "USB-накопитель с данными найден в столе Белова", supportsGuilty = true, weight = 1, alwaysVisible = true },
+            new ArgumentData { argumentId = "arg_3", text = "Белов задерживался допоздна — имел возможность", supportsGuilty = true, weight = 1, requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_nina" },
+            new ArgumentData { argumentId = "arg_4", text = "MAC-адрес в логах принадлежит рабочей станции Зотова", supportsGuilty = false, weight = 3, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_serverlogs" },
+            new ArgumentData { argumentId = "arg_5", text = "Файлы записаны в 02:15 — Белов уехал в 22:30", supportsGuilty = false, weight = 2, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_usb" },
+            new ArgumentData { argumentId = "arg_6", text = "У Белова нет подозрительных денежных поступлений", supportsGuilty = false, weight = 2, requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Коул" },
+            new ArgumentData { argumentId = "arg_7", text = "Зотов обналичил $50,000 без чеков за стройматериалы", supportsGuilty = false, weight = 2, requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Нэш" },
+            new ArgumentData { argumentId = "arg_8", text = "Лингвистический анализ указывает на терминологию Зотова", supportsGuilty = false, weight = 2, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_email" },
+            new ArgumentData { argumentId = "arg_9", text = "Стиль переписки похож на Белова (технический жаргон)", supportsGuilty = true, weight = 1, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_email" },
+            new ArgumentData { argumentId = "arg_10", text = "Зотов имел полный доступ как администратор системы", supportsGuilty = false, weight = 2, requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Пэйдж" }
         };
 
-        // Timeline events
-        s.timelineStartHour = 21f;
-        s.timelineEndHour = 3f;
-        s.timelineEvents = new TimelineEventData[]
+        // Timeline — chronology with contradictions
+        s.timelineEntries = new TimelineEntryData[]
         {
-            new TimelineEventData { eventId = "tl_belov_stay", description = "Белов задержался на работе", correctHour = 21f, alwaysVisible = true },
-            new TimelineEventData { eventId = "tl_belov_leave", description = "Белов уехал домой", correctHour = 22.5f, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_usb" },
-            new TimelineEventData { eventId = "tl_access_db", description = "Доступ к базе данных", correctHour = 23.783f, alwaysVisible = true },
-            new TimelineEventData { eventId = "tl_usb_write", description = "Запись на USB-накопитель", correctHour = 2.25f, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_usb" },
-            new TimelineEventData { eventId = "tl_zotov_leave", description = "Зотов покинул здание", correctHour = 3f, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_usb" },
-            new TimelineEventData { eventId = "tl_email_sent", description = "Отправлено письмо покупателю", correctHour = 2.5f, requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_email" }
+            new TimelineEntryData { entryId = "tl_1", time = "21:00", description = "Белов задержался по просьбе Зотова (миграция серверов)", source = "Показания Белова", alwaysVisible = true },
+            new TimelineEntryData { entryId = "tl_2", time = "22:30", description = "Машина Белова покинула парковку", source = "Камера парковки", requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_usb" },
+            new TimelineEntryData { entryId = "tl_3", time = "23:47", description = "Доступ к базе данных с аккаунта Белова", source = "Серверные логи", alwaysVisible = true },
+            new TimelineEntryData { entryId = "tl_4", time = "02:15", description = "Файлы записаны на USB-накопитель", source = "Экспертиза USB", requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_usb" },
+            new TimelineEntryData { entryId = "tl_5", time = "02:30", description = "Письмо покупателю отправлено с анонимного аккаунта", source = "Экспертиза переписки", requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_email" },
+            new TimelineEntryData { entryId = "tl_6", time = "03:00", description = "Зотов покинул здание", source = "Камера парковки", requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_usb" },
+            new TimelineEntryData { entryId = "tl_7", time = "23:47", description = "MAC-адрес в логах принадлежит станции Зотова, не Белова", source = "Экспертиза логов", requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_serverlogs" },
+            new TimelineEntryData { entryId = "tl_8", time = "09:00", description = "Зотов сообщил руководству об утечке", source = "Показания Зотова", alwaysVisible = true }
         };
+
+        s.timelineContradictions = new TimelineContradictionData[]
+        {
+            new TimelineContradictionData
+            {
+                entryA = "tl_2", entryB = "tl_3",
+                explanation = "Белов уехал в 22:30. Доступ к базе в 23:47 — через час с лишним после отъезда. Кто-то другой использовал его аккаунт."
+            },
+            new TimelineContradictionData
+            {
+                entryA = "tl_3", entryB = "tl_7",
+                explanation = "Логи показывают аккаунт Белова, но MAC-адрес устройства принадлежит Зотову. Аккаунт использован с чужого компьютера."
+            },
+            new TimelineContradictionData
+            {
+                entryA = "tl_4", entryB = "tl_2",
+                explanation = "USB записан в 02:15 в офисе. Белов уехал в 22:30. Он физически не мог записать файлы — его не было в здании."
+            }
+        };
+        s.maxContradictionAttempts = 5;
 
         // Connection board
         s.connectionCards = new ConnectionCardData[]
