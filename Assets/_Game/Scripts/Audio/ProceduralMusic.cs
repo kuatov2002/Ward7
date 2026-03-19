@@ -20,7 +20,6 @@ public class ProceduralMusic : MonoBehaviour
     int _currentBar;
     float _sidechain = 1f;
     float _filterOpenness;
-    float _lastPianoFreq;
 
     // D minor: D3(0) E3(1) F3(2) G3(3) A3(4) Bb3(5) C4(6) D4(7) E4(8) F4(9) G4(10) A4(11) Bb4(12) C5(13) D5(14)
     static readonly float[] N = {
@@ -150,7 +149,38 @@ public class ProceduralMusic : MonoBehaviour
         return s;
     }
 
-    public void StartMusic() { if (_playing) return; _playing = true; _currentBar = 0; _lastPianoFreq = 0; StartCoroutine(Loop()); StartCoroutine(SidechainDecay()); }
+    public void StartMusic() { if (_playing) return; _playing = true; _currentBar = 0; StartCoroutine(PrewarmThenPlay()); }
+
+    IEnumerator PrewarmThenPlay()
+    {
+        // Pre-render clips across multiple frames to avoid startup freeze
+        float s16 = 60f / bpm / 4f;
+        float[] durations = { s16 * 10f, s16 * 2.5f, s16 * 1.8f, s16 * 1.2f, s16 * 0.65f, s16 * 3f, s16 * 2.8f, s16 * 4f, s16 * 16f };
+        Wave[] waves = { Wave.Sine, Wave.FiltSaw, Wave.Piano, Wave.Vibraphone, Wave.Pad };
+        int count = 0;
+        foreach (var w in waves)
+        {
+            foreach (var d in durations)
+            {
+                for (int ni = 0; ni < N.Length; ni++)
+                {
+                    float freq = N[ni];
+                    if (w == Wave.Sine) freq *= 0.25f;
+                    else if (w == Wave.FiltSaw) freq *= 0.5f;
+                    else if (w == Wave.Vibraphone) freq *= 2f;
+                    long key = PackKey(freq, d, w);
+                    if (!_clipCache.ContainsKey(key))
+                    {
+                        _clipCache[key] = Render(freq, d, w, 1f, 0.5f);
+                        count++;
+                        if (count % 16 == 0) yield return null; // spread across frames
+                    }
+                }
+            }
+        }
+        StartCoroutine(Loop());
+        StartCoroutine(SidechainDecay());
+    }
     public void StopMusic() { _playing = false; StopAllCoroutines(); }
 
     public void SetIntensity(float t)
@@ -231,12 +261,7 @@ public class ProceduralMusic : MonoBehaviour
                 {
                     int pn = PianoC[bar % 4][s / 2];
                     if (pn >= 0 && pn < N.Length)
-                    {
-                        float freq = N[pn];
-                        if (_lastPianoFreq > 0) freq = Mathf.Lerp(_lastPianoFreq, freq, 0.8f);
-                        _lastPianoFreq = N[pn];
-                        Schedule(_pianoSource, freq, s16 * 3f, Wave.Piano, 0.35f * vel, 0.5f, st);
-                    }
+                        Schedule(_pianoSource, N[pn], s16 * 3f, Wave.Piano, 0.35f * vel, 0.5f, st);
                 }
 
                 // Piano C2
@@ -244,12 +269,7 @@ public class ProceduralMusic : MonoBehaviour
                 {
                     int pn = PianoC2[bar % 4][s / 2];
                     if (pn >= 0 && pn < N.Length)
-                    {
-                        float freq = N[pn];
-                        if (_lastPianoFreq > 0) freq = Mathf.Lerp(_lastPianoFreq, freq, 0.8f);
-                        _lastPianoFreq = N[pn];
-                        Schedule(_pianoSource, freq, s16 * 2.8f, Wave.Piano, 0.32f * vel, 0.5f, st);
-                    }
+                        Schedule(_pianoSource, N[pn], s16 * 2.8f, Wave.Piano, 0.32f * vel, 0.5f, st);
                 }
 
                 // A2: ghost piano echo
@@ -277,11 +297,26 @@ public class ProceduralMusic : MonoBehaviour
         Schedule(_padSource, N[t5], dur, Wave.Pad, 0.08f, 0.5f, dsp);
     }
 
+    // Cache rendered clips: same note = same clip, no re-rendering
+    // Key = packed int: freqTenths | durHundredths<<17 | wave<<30  (no string alloc)
+    readonly System.Collections.Generic.Dictionary<long, AudioClip> _clipCache = new();
+
+    static long PackKey(float freq, float dur, Wave w)
+    {
+        long f = (long)(freq * 10f);
+        long d = (long)(dur * 100f);
+        return f | (d << 20) | ((long)w << 40);
+    }
+
     void Schedule(AudioSource parent, float freq, float dur, Wave w, float amp, float pan, double dsp)
     {
-        var clip = Render(freq, dur, w, amp, pan);
+        long key = PackKey(freq, dur, w);
+        if (!_clipCache.TryGetValue(key, out var clip))
+            return; // not prewarmed — skip instead of freezing
         var src = Pool(parent);
         src.clip = clip;
+        src.volume = parent.volume * amp;
+        src.panStereo = (pan - 0.5f) * 2f;
         src.PlayScheduled(dsp);
     }
 
@@ -303,21 +338,37 @@ public class ProceduralMusic : MonoBehaviour
     static readonly float[] Pan3 = { 0.35f, 0.5f, 0.65f };
     static readonly float[] Uni5 = { 0.993f, 0.997f, 1f, 1.003f, 1.007f };
     static readonly float[] Pan5 = { 0.2f, 0.35f, 0.5f, 0.65f, 0.8f };
+    static readonly float[] Uni1 = { 1f };
+
+    const float TWO_PI = 2f * Mathf.PI;
+    const float FOUR_PI = 4f * Mathf.PI;
 
     AudioClip Render(float freq, float dur, Wave w, float amp, float pan)
     {
-        int len = Mathf.Max((int)(44100 * dur), 200);
-        var bL = new float[len];
-        var bR = new float[len];
-        float filt = _filterOpenness;
+        // Pad & Sine use lower sample rate (22050) — saves 50% CPU for these
+        int rate = (w == Wave.Pad || w == Wave.Sine) ? 22050 : 44100;
+        int len = Mathf.Max((int)(rate * dur), 200);
+        float invRate = 1f / rate;
 
         int voices; float[] det, pans; float vAmp;
         switch (w)
         {
-            case Wave.Pad: voices = 5; det = Uni5; pans = Pan5; vAmp = amp / 2.5f; break;
+            case Wave.Pad: voices = 3; det = Uni3; pans = Pan3; vAmp = amp / 1.8f; break; // 3 voices instead of 5
             case Wave.Piano: voices = 3; det = Uni3; pans = Pan3; vAmp = amp / 1.6f; break;
             case Wave.FiltSaw: voices = 3; det = Uni3; pans = Pan3; vAmp = amp / 1.6f; break;
-            default: voices = 1; det = new[]{1f}; pans = new[]{pan}; vAmp = amp; break;
+            default: voices = 1; det = Uni1; pans = Uni1; vAmp = amp; break;
+        }
+
+        // Pre-compute pan factors
+        float panL = Mathf.Sqrt(1f - pan);
+        float panR = Mathf.Sqrt(pan);
+        var vpL = new float[voices];
+        var vpR = new float[voices];
+        for (int v = 0; v < voices; v++)
+        {
+            float vp = voices > 1 ? pans[v] : pan;
+            vpL[v] = Mathf.Sqrt(1f - vp);
+            vpR[v] = Mathf.Sqrt(vp);
         }
 
         var ph = new float[voices];
@@ -325,30 +376,27 @@ public class ProceduralMusic : MonoBehaviour
         var da = new float[voices];
         for (int v = 0; v < voices; v++) { ph[v] = Random.value; dr[v] = Random.Range(1.5f, 4f); da[v] = Random.Range(0.0003f, 0.0015f); }
 
+        float filt = _filterOpenness;
+        var stereo = new float[len * 2];
+
         for (int i = 0; i < len; i++)
         {
-            float t = i / 44100f;
-            float atk, rel, env;
+            float t = i * invRate;
+            float env;
 
             switch (w)
             {
                 case Wave.Piano:
-                    atk = Mathf.Clamp01(t * 300f); // sharp piano attack
-                    rel = Mathf.Exp(-t * 2.5f); // long piano decay
-                    env = atk * rel;
+                    env = Mathf.Clamp01(t * 300f) * Mathf.Exp(-t * 2.5f);
                     break;
                 case Wave.Vibraphone:
-                    atk = Mathf.Clamp01(t * 500f);
-                    rel = Mathf.Exp(-t * 1.8f);
-                    env = atk * rel * (1f + Mathf.Sin(t * 6f * Mathf.PI) * 0.15f); // tremolo
+                    env = Mathf.Clamp01(t * 500f) * Mathf.Exp(-t * 1.8f) * (1f + Mathf.Sin(t * 6f * Mathf.PI) * 0.15f);
                     break;
                 case Wave.Pad:
                     env = (1f - Mathf.Exp(-t * 1.2f)) * Mathf.Clamp01((dur - t) * 8f);
                     break;
                 default:
-                    atk = 1f - Mathf.Exp(-t * 20f);
-                    rel = Mathf.Clamp01((dur - t) * 10f);
-                    env = atk * rel;
+                    env = (1f - Mathf.Exp(-t * 20f)) * Mathf.Clamp01((dur - t) * 10f);
                     break;
             }
 
@@ -358,57 +406,47 @@ public class ProceduralMusic : MonoBehaviour
                 float drift = 1f + Mathf.Sin(t * dr[v] * Mathf.PI) * da[v];
                 float vf = freq * det[v] * drift;
                 float p = (vf * t + ph[v]) % 1f;
-                float val = 0f;
+                float val;
 
                 switch (w)
                 {
                     case Wave.Sine:
-                        val = Mathf.Sin(2f * Mathf.PI * p);
+                        val = Mathf.Sin(TWO_PI * p);
                         break;
                     case Wave.FiltSaw:
                         val = (2f * p - 1f) * (0.3f + filt * 0.15f)
-                            + Mathf.Sin(2f * Mathf.PI * p) * (0.5f - filt * 0.15f)
-                            + Mathf.Sin(4f * Mathf.PI * p) * filt * 0.1f;
-                        val += (Random.value - 0.5f) * 0.008f;
+                            + Mathf.Sin(TWO_PI * p) * (0.5f - filt * 0.15f)
+                            + Mathf.Sin(FOUR_PI * p) * filt * 0.1f;
                         break;
                     case Wave.Piano:
-                        // Piano: fundamental + inharmonic partials + hammer noise
-                        val = Mathf.Sin(2f * Mathf.PI * vf * t) * 0.4f
-                            + Mathf.Sin(2f * Mathf.PI * vf * 2.01f * t) * 0.2f * Mathf.Exp(-t * 4f)
-                            + Mathf.Sin(2f * Mathf.PI * vf * 3.02f * t) * 0.1f * Mathf.Exp(-t * 6f)
-                            + Mathf.Sin(2f * Mathf.PI * vf * 4.05f * t) * 0.05f * Mathf.Exp(-t * 8f);
-                        // Hammer click
-                        if (t < 0.005f) val += (Random.value - 0.5f) * 0.3f * (1f - t / 0.005f);
-                        val += (Random.value - 0.5f) * 0.003f;
+                        val = Mathf.Sin(TWO_PI * vf * t) * 0.4f
+                            + Mathf.Sin(TWO_PI * vf * 2.01f * t) * 0.2f * Mathf.Exp(-t * 4f)
+                            + Mathf.Sin(TWO_PI * vf * 3.02f * t) * 0.1f * Mathf.Exp(-t * 6f);
                         break;
                     case Wave.Vibraphone:
-                        // Vibraphone: bell-like, clean harmonics
-                        val = Mathf.Sin(2f * Mathf.PI * vf * t) * 0.4f
-                            + Mathf.Sin(2f * Mathf.PI * vf * 3f * t) * 0.15f * Mathf.Exp(-t * 3f)
-                            + Mathf.Sin(2f * Mathf.PI * vf * 5f * t) * 0.06f * Mathf.Exp(-t * 5f);
+                        val = Mathf.Sin(TWO_PI * vf * t) * 0.4f
+                            + Mathf.Sin(TWO_PI * vf * 3f * t) * 0.15f * Mathf.Exp(-t * 3f);
                         break;
                     case Wave.Pad:
-                        float d2 = 1.005f;
-                        val = Mathf.Sin(2f * Mathf.PI * vf * t) * 0.25f
-                            + Mathf.Sin(2f * Mathf.PI * vf * d2 * t) * 0.2f
-                            + Mathf.Sin(2f * Mathf.PI * vf / d2 * t) * 0.2f
-                            + Mathf.Sin(4f * Mathf.PI * vf * t) * 0.06f;
-                        val += (Random.value - 0.5f) * 0.003f;
+                        val = Mathf.Sin(TWO_PI * vf * t) * 0.25f
+                            + Mathf.Sin(TWO_PI * vf * 1.005f * t) * 0.2f
+                            + Mathf.Sin(FOUR_PI * vf * t) * 0.06f;
+                        break;
+                    default:
+                        val = 0f;
                         break;
                 }
 
-                float vp = voices > 1 ? pans[v] : pan;
-                sL += val * Mathf.Sqrt(1f - vp);
-                sR += val * Mathf.Sqrt(vp);
+                sL += val * vpL[v];
+                sR += val * vpR[v];
             }
 
-            bL[i] = sL * env * vAmp * Mathf.Sqrt(1f - pan);
-            bR[i] = sR * env * vAmp * Mathf.Sqrt(pan);
+            float sample = env * vAmp;
+            stereo[i * 2] = sL * sample * panL;
+            stereo[i * 2 + 1] = sR * sample * panR;
         }
 
-        var stereo = new float[len * 2];
-        for (int i = 0; i < len; i++) { stereo[i*2] = bL[i]; stereo[i*2+1] = bR[i]; }
-        var clip = AudioClip.Create("n", len, 2, 44100, false);
+        var clip = AudioClip.Create("n", len, 2, rate, false);
         clip.SetData(stereo, 0);
         return clip;
     }
@@ -458,7 +496,7 @@ public class ProceduralMusic : MonoBehaviour
     int _pi;
     AudioSource Pool(AudioSource parent)
     {
-        const int sz = 64;
+        const int sz = 32;
         while (_pool.Count < sz)
         {
             var go = new GameObject("_t"); go.transform.SetParent(transform);

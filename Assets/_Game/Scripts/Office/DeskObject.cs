@@ -24,12 +24,16 @@ public class DeskObject : MonoBehaviour
     float _flickerTimer;
     bool _flickerState;
 
+    static readonly int ColorID = Shader.PropertyToID("_Color");
+    MaterialPropertyBlock _mpb;
+
     void Awake()
     {
+        _mpb = new MaterialPropertyBlock();
         _renderer = GetComponentInChildren<Renderer>();
         _allRenderers = GetComponentsInChildren<Renderer>();
         if (_renderer != null)
-            _baseColor = _renderer.material.color;
+            _baseColor = _renderer.sharedMaterial.color;
     }
 
     void Update()
@@ -43,10 +47,12 @@ public class DeskObject : MonoBehaviour
             _flickerTimer = 0f;
             _flickerState = !_flickerState;
             float mult = _flickerState ? 1.8f : 1.3f;
+            Color c = _baseColor * mult;
+            _mpb.SetColor(ColorID, c);
             foreach (var r in _allRenderers)
             {
                 if (r != null)
-                    r.material.color = _baseColor * mult;
+                    r.SetPropertyBlock(_mpb);
             }
         }
     }
@@ -61,7 +67,7 @@ public class DeskObject : MonoBehaviour
             foreach (var r in _allRenderers)
             {
                 if (r != null)
-                    r.material.color = _baseColor;
+                    r.SetPropertyBlock(null);
             }
         }
         var anim = GetComponent<DeskObjectAnimator>();
