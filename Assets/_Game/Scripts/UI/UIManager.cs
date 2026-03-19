@@ -47,8 +47,9 @@ public class UIManager : MonoBehaviour
         _controlsHint = _root.Q<Label>("controls-hint");
 
         string[] panelNames = {
-            "main-menu-panel", "outcome-panel", "dossier-panel",
-            "contact-panel", "evidence-panel", "testimony-panel",
+            "main-menu-panel", "outcome-panel", "doccompare-panel", "dossier-panel",
+            "contact-panel", "evidence-inspect-panel", "evidence-panel",
+            "liedetector-panel", "testimony-panel",
             "interrogation-panel", "connection-panel", "timeline-panel",
             "briefing-panel", "ending-panel"
         };

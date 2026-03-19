@@ -82,8 +82,19 @@ public class TestimonyUI : MonoBehaviour, IPanelController
             {
                 box.Add(Spacer(5));
                 string wName = t.witnessName;
+                var capturedT = t;
                 var btn = new Button(() => {
                     choices.Commit(w, ChoiceType.Testimony, wName);
+                    // Launch lie detector if clarification lines exist
+                    if (capturedT.clarificationLines != null && capturedT.clarificationLines.Length > 0)
+                    {
+                        var ld = FindFirstObjectByType<LieDetectorUI>();
+                        if (ld != null)
+                        {
+                            ld.StartForWitness(wName, capturedT.clarificationLines, capturedT.startingTrust);
+                            return;
+                        }
+                    }
                     OnShow();
                 });
                 btn.text = "Запросить уточнение";

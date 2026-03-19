@@ -38,6 +38,11 @@ public class PressureService
         _save.Data.foundContradictions.Clear();
         _save.Data.contradictionAttemptsUsed = 0;
         _save.Data.chosenTones.Clear();
+        _save.Data.foundDiscrepancies.Clear();
+        _save.Data.inspectedZones.Clear();
+        _save.Data.caughtLies.Clear();
+        _save.Data.documentCompareCompleted = false;
+        _save.Data.evidenceInspectCompleted = false;
         _save.Save();
     }
 }

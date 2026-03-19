@@ -54,7 +54,12 @@ public class SaveData
     public int connectionAttemptsUsed;
     public List<string> foundContradictions = new();
     public int contradictionAttemptsUsed;
-    public List<string> chosenTones = new(); // "0:press", "1:neutral", "2:empathy"
+    public List<string> chosenTones = new();
+    public List<string> foundDiscrepancies = new();
+    public List<string> inspectedZones = new(); // "evidenceId:zoneIndex"
+    public List<string> caughtLies = new(); // "witnessName:lineIndex"
+    public bool documentCompareCompleted;
+    public bool evidenceInspectCompleted; // "0:press", "1:neutral", "2:empathy"
 }
 
 public class SaveService

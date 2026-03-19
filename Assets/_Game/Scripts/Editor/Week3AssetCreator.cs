@@ -44,26 +44,84 @@ public static class Week3AssetCreator
         {
             new EvidenceData { evidenceId = "e3_serverlogs", title = "Серверные логи",
                 baseDescription = "Вход в базу данных пациентов с учётной записи user_belov в 23:47. Скачано 12 000 записей за 15 минут. IP-адрес — внутренний VPN клиники. Сессия завершена в 00:02.",
-                expertDescription = "MAC-адрес устройства в логах не совпадает ни с одним зарегистрированным устройством Белова (ноутбук, рабочая станция). MAC совпадает с рабочей станцией Зотова — серийный номер подтверждён. Кто-то вошёл под учётной записью Белова с компьютера Зотова." },
+                expertDescription = "MAC-адрес устройства в логах не совпадает ни с одним зарегистрированным устройством Белова (ноутбук, рабочая станция). MAC совпадает с рабочей станцией Зотова — серийный номер подтверждён. Кто-то вошёл под учётной записью Белова с компьютера Зотова.",
+                zones = new EvidenceZoneData[]
+                {
+                    new EvidenceZoneData { label = "Логин", detail = "Учётная запись belov_a использована в 23:47", isCritical = false },
+                    new EvidenceZoneData { label = "IP адрес", detail = "Внутренний VPN: 192.168.1.47", isCritical = false },
+                    new EvidenceZoneData { label = "MAC адрес", detail = "MAC не совпадает с ноутбуком Белова — совпадает с рабочей станцией Зотова", isCritical = true },
+                    new EvidenceZoneData { label = "Объём", detail = "12,247 записей скачаны за 15 минут — требуется прямой доступ к серверу", isCritical = false },
+                    new EvidenceZoneData { label = "Время", detail = "Доступ в 23:47 — камера показывает что Белов уехал в 22:30", isCritical = true },
+                    new EvidenceZoneData { label = "Админ лог", detail = "Пароль belov_a сброшен администратором в 23:40 — за 7 минут до доступа", isCritical = true }
+                },
+                maxInspections = 4 },
             new EvidenceData { evidenceId = "e3_usb", title = "USB-накопитель",
                 baseDescription = "Чёрный USB-накопитель без маркировки, обнаружен в верхнем ящике стола Белова. Содержит полную копию базы данных пациентов. Дата записи файлов — 02:15 ночи.",
-                expertDescription = "Файлы записаны в 02:15. Камера парковки клиники показывает: машина Белова покинула парковку в 22:30. Зотов вышел из здания в 03:00. Белов физически не мог записать файлы в 02:15 — его не было в здании." },
+                expertDescription = "Файлы записаны в 02:15. Камера парковки клиники показывает: машина Белова покинула парковку в 22:30. Зотов вышел из здания в 03:00. Белов физически не мог записать файлы в 02:15 — его не было в здании.",
+                zones = new EvidenceZoneData[]
+                {
+                    new EvidenceZoneData { label = "Устройство", detail = "USB 32GB, чёрный, без маркировки — не совпадает с личной флешкой Белова (синяя)", isCritical = true },
+                    new EvidenceZoneData { label = "Содержимое", detail = "Копия базы данных пациентов — 12,247 записей", isCritical = false },
+                    new EvidenceZoneData { label = "Время записи", detail = "Файлы записаны в 02:15 — Белов уехал в 22:30 по камерам", isCritical = true },
+                    new EvidenceZoneData { label = "Камера", detail = "Камера парковки: машина Белова уехала 22:30, Зотов — 03:00", isCritical = true },
+                    new EvidenceZoneData { label = "Место", detail = "Найден в незапертом ящике стола Белова", isCritical = false },
+                    new EvidenceZoneData { label = "Отпечатки", detail = "Отпечатки Белова НЕ найдены на USB — протёрт", isCritical = true }
+                },
+                maxInspections = 4 },
             new EvidenceData { evidenceId = "e3_emails", title = "Переписка с «Гарант-Плюс»",
                 baseDescription = "Анонимная переписка о продаже медицинских данных. Стиль — технический, профессиональный. Автор разбирается в структуре базы данных и ценности медицинских записей для страховых компаний.",
-                expertDescription = "Лингвистический анализ: автор использует термины из внутренних отчётов IT-отдела — «миграция кластеров», «индексация по ICD-10». Белов в своей рабочей переписке этих терминов не использует — это лексикон Зотова. Метаданные писем указывают на браузер Firefox 118 под Linux — Белов работает на Windows, Зотов — единственный пользователь Linux в отделе." }
+                expertDescription = "Лингвистический анализ: автор использует термины из внутренних отчётов IT-отдела — «миграция кластеров», «индексация по ICD-10». Белов в своей рабочей переписке этих терминов не использует — это лексикон Зотова. Метаданные писем указывают на браузер Firefox 118 под Linux — Белов работает на Windows, Зотов — единственный пользователь Linux в отделе.",
+                zones = new EvidenceZoneData[]
+                {
+                    new EvidenceZoneData { label = "Отправитель", detail = "Анонимный аккаунт через зашифрованную почту", isCritical = false },
+                    new EvidenceZoneData { label = "Получатель", detail = "Страховая компания Гарант-Плюс", isCritical = false },
+                    new EvidenceZoneData { label = "Стиль", detail = "Технический жаргон — похож на Белова, но термины из отчётов Зотова", isCritical = true },
+                    new EvidenceZoneData { label = "Метаданные", detail = "Браузер: Firefox 98.0 — версия установлена только на компьютере Зотова", isCritical = true },
+                    new EvidenceZoneData { label = "Время", detail = "Отправлено в 02:30 — Белов уехал в 22:30", isCritical = true },
+                    new EvidenceZoneData { label = "Цена", detail = "Запрошено $75,000 за базу данных", isCritical = false }
+                },
+                maxInspections = 4 }
         };
 
         s.testimonies = new[]
         {
             new TestimonyData { witnessName = "Коул (старший следователь)",
                 baseTestimony = "«Логин Белова, данные на его флешке, мотив — недоволен зарплатой. Классический инсайдер. Плюс ипотека. Деньги от продажи данных решили бы его финансовые проблемы.»",
-                clarification = "«Но я поднял финансы Белова. Никаких подозрительных поступлений — ни на его счета, ни на счета жены. За последний год — только зарплата и детские. Если он продал данные — где деньги? Криптовалютных кошельков не обнаружено.»" },
+                clarification = "«Но я поднял финансы Белова. Никаких подозрительных поступлений — ни на его счета, ни на счета жены. За последний год — только зарплата и детские. Если он продал данные — где деньги? Криптовалютных кошельков не обнаружено.»",
+                clarificationLines = new TestimonyLineData[]
+                {
+                    new TestimonyLineData { text = "Поднял финансы Белова.", isLie = false },
+                    new TestimonyLineData { text = "Нашёл подозрительный перевод на $10,000.", isLie = true, lieReason = "Никаких подозрительных поступлений на счетах Белова и жены не обнаружено" },
+                    new TestimonyLineData { text = "Если он продал данные — где деньги?", isLie = false },
+                    new TestimonyLineData { text = "Белов живёт скромно, без роскоши.", isLie = false },
+                    new TestimonyLineData { text = "Финансовый мотив не подтверждается.", isLie = false }
+                },
+                startingTrust = 3 },
             new TestimonyData { witnessName = "Пэйдж (эксперт-аналитик)",
                 baseTestimony = "«Технически — всё указывает на Белова. Его логин, время совпадает с его поздними задержками, USB в его столе. Цепочка улик последовательна. Но MAC-адрес в логах не проверялся повторно — стоит перепроверить.»",
-                clarification = "«Перепроверила. MAC-адрес устройства не принадлежит ни одному компьютеру Белова. Совпадает с рабочей станцией Зотова. Как администратор, Зотов может сбросить любой пароль и войти под любой учётной записью. Это его штатная функция.»" },
+                clarification = "«Перепроверила. MAC-адрес устройства не принадлежит ни одному компьютеру Белова. Совпадает с рабочей станцией Зотова. Как администратор, Зотов может сбросить любой пароль и войти под любой учётной записью. Это его штатная функция.»",
+                clarificationLines = new TestimonyLineData[]
+                {
+                    new TestimonyLineData { text = "Обнаружила аномалию в логах.", isLie = false },
+                    new TestimonyLineData { text = "MAC-адрес в логах принадлежит ноутбуку Белова.", isLie = true, lieReason = "MAC-адрес принадлежит рабочей станции Зотова, не Белова" },
+                    new TestimonyLineData { text = "Кто-то использовал учётные данные Белова с другого устройства.", isLie = false },
+                    new TestimonyLineData { text = "Администратор системы мог сбросить любой пароль.", isLie = false },
+                    new TestimonyLineData { text = "Технически — вход мог быть совершён кем угодно с root-доступом.", isLie = false }
+                },
+                startingTrust = 3 },
             new TestimonyData { witnessName = "Нэш (полевой агент)",
                 baseTestimony = "«Зотов сам обнаружил утечку и доложил. Обычно тот кто раскрывает — не виноват. Но Зотов имел полный административный доступ ко всем системам. Мог подменить логи, создать учётные записи, стереть следы. Финансовая ситуация Зотова — проверяю.»",
-                clarification = "«Зотов две недели назад оформил кредит на $50 000 — 'ремонт дома'. Ни одного чека за стройматериалы. Деньги обналичены в течение трёх дней. Дом Зотова — съёмная квартира. Ремонтировать нечего.»" }
+                clarification = "«Зотов две недели назад оформил кредит на $50 000 — 'ремонт дома'. Ни одного чека за стройматериалы. Деньги обналичены в течение трёх дней. Дом Зотова — съёмная квартира. Ремонтировать нечего.»",
+                clarificationLines = new TestimonyLineData[]
+                {
+                    new TestimonyLineData { text = "Проверил финансы Зотова.", isLie = false },
+                    new TestimonyLineData { text = "Зотов оформил кредит на $50,000 на ремонт дома.", isLie = false },
+                    new TestimonyLineData { text = "Нашёл чеки за стройматериалы.", isLie = true, lieReason = "Ни одного чека за стройматериалы — деньги обналичены" },
+                    new TestimonyLineData { text = "Зотов подал заявление первым — обычно невиновные так делают.", isLie = false },
+                    new TestimonyLineData { text = "Но Зотов имел полный доступ и мог подменить логи.", isLie = false },
+                    new TestimonyLineData { text = "Зотов отказался от полиграфа — это его право.", isLie = true, lieReason = "Отказ от полиграфа в совокупности с $50,000 кредитом — подозрительно" }
+                },
+                startingTrust = 3 }
         };
 
         s.tonedQuestions = new TonedQuestionData[]
@@ -283,6 +341,21 @@ public static class Week3AssetCreator
             new ConnectionData { cardA = "card_zotov", cardB = "card_leak", revealText = "Зотов сам обнаружил и сообщил об утечке. Обычно тот кто находит — не виноват. Но у него был полный доступ." }
         };
         s.maxConnectionAttempts = 9;
+
+        s.documentCompare = new DocumentCompareData
+        {
+            leftTitle = "ЗАЯВЛЕНИЕ ЗОТОВА",
+            rightTitle = "СЕРВЕРНЫЕ ЛОГИ",
+            lines = new DocumentLineData[]
+            {
+                new DocumentLineData { leftText = "Обнаружил утечку: 9:00 утра", rightText = "Первый алерт системы: 9:15 утра", isDiscrepancy = true, revealFact = "Зотов узнал об утечке ДО системного алерта — откуда?" },
+                new DocumentLineData { leftText = "Подозреваемый: Артём Белов", rightText = "Учётная запись: belov_a (доступ 23:47)", isDiscrepancy = false },
+                new DocumentLineData { leftText = "Метод: скачивание через USB", rightText = "USB подключён: 02:15", isDiscrepancy = true, revealFact = "Зотов пишет про USB, но в логах USB подключён через 3 часа после доступа" },
+                new DocumentLineData { leftText = "Белов имел мотив: недовольство зарплатой", rightText = "HR записи: повышение Белова одобрено в прошлом месяце", isDiscrepancy = true, revealFact = "Белов получил повышение — нет мотива недовольства" },
+                new DocumentLineData { leftText = "Объём данных: 12,000 записей", rightText = "Скачано: 12,247 записей", isDiscrepancy = false },
+                new DocumentLineData { leftText = "Рекомендация: немедленное увольнение Белова", rightText = "IP доступа: внутренний VPN (192.168.1.47)", isDiscrepancy = false }
+            }
+        };
 
         SaveAsset(s, "suspect_03_belov");
     }

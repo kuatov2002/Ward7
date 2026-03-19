@@ -82,6 +82,30 @@ public class OfficeController : MonoBehaviour
 
     public void OpenPanel(string panelName)
     {
+        var save = ServiceLocator.Get<SaveService>();
+        var cases = ServiceLocator.Get<CaseService>();
+
+        // Redirect to mini-game if not completed
+        if (panelName == "dossier-panel" && save != null && !save.Data.documentCompareCompleted)
+        {
+            var s = cases?.ActiveCase;
+            if (s != null && s.documentCompare != null && s.documentCompare.lines != null && s.documentCompare.lines.Length > 0)
+            {
+                UIManager.Instance.ShowPanel("doccompare-panel");
+                return;
+            }
+        }
+
+        if (panelName == "evidence-panel" && save != null && !save.Data.evidenceInspectCompleted)
+        {
+            var s = cases?.ActiveCase;
+            if (s != null && s.evidence != null && s.evidence.Length > 0 && s.evidence[0].zones != null && s.evidence[0].zones.Length > 0)
+            {
+                UIManager.Instance.ShowPanel("evidence-inspect-panel");
+                return;
+            }
+        }
+
         UIManager.Instance.ShowPanel(panelName);
     }
 

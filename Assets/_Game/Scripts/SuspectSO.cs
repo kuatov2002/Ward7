@@ -11,6 +11,7 @@ public class SuspectSO : ScriptableObject
     [Header("Monday - Dossier")]
     [TextArea(5, 20)] public string dossierText;
     public ContactData[] contacts;
+    public DocumentCompareData documentCompare;
 
     [Header("Tuesday - Evidence")]
     public EvidenceData[] evidence;
@@ -62,6 +63,8 @@ public class EvidenceData
     public string title;
     [TextArea(3, 10)] public string baseDescription;
     [TextArea(3, 10)] public string expertDescription;
+    public EvidenceZoneData[] zones;
+    public int maxInspections = 4;
 }
 
 [System.Serializable]
@@ -70,6 +73,8 @@ public class TestimonyData
     public string witnessName;
     [TextArea(3, 10)] public string baseTestimony;
     [TextArea(3, 10)] public string clarification;
+    public TestimonyLineData[] clarificationLines;
+    public int startingTrust = 3;
 }
 
 [System.Serializable]
@@ -193,4 +198,39 @@ public class ConnectionData
     public string cardA;
     public string cardB;
     [TextArea(1, 3)] public string revealText;
+}
+
+// ─── Mini-Game Data ───
+
+[System.Serializable]
+public class DocumentCompareData
+{
+    public string leftTitle;
+    public string rightTitle;
+    public DocumentLineData[] lines;
+}
+
+[System.Serializable]
+public class DocumentLineData
+{
+    public string leftText;
+    public string rightText;
+    public bool isDiscrepancy;
+    [TextArea(1, 3)] public string revealFact;
+}
+
+[System.Serializable]
+public class EvidenceZoneData
+{
+    public string label;
+    [TextArea(1, 3)] public string detail;
+    public bool isCritical;
+}
+
+[System.Serializable]
+public class TestimonyLineData
+{
+    [TextArea(1, 2)] public string text;
+    public bool isLie;
+    [TextArea(1, 2)] public string lieReason;
 }

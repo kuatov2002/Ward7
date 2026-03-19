@@ -367,6 +367,9 @@ public class SceneSetup : MonoBehaviour
         uiGo.AddComponent<EvidenceUI>();
         uiGo.AddComponent<TestimonyUI>();
         uiGo.AddComponent<InterrogationUI>();
+        uiGo.AddComponent<DocumentCompareUI>();
+        uiGo.AddComponent<EvidenceInspectUI>();
+        uiGo.AddComponent<LieDetectorUI>();
         uiGo.AddComponent<ConnectionBoardUI>();
         uiGo.AddComponent<TimelineUI>();
         uiGo.AddComponent<BriefingUI>();
