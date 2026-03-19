@@ -442,13 +442,16 @@ public class GameManager : MonoBehaviour
         GUILayout.Space(20);
         GUILayout.BeginHorizontal(); GUILayout.FlexibleSpace();
         var cur = _verdicts.GetVerdict();
+        var defaultColor = GUI.skin.button.normal.textColor;
+
         var gStyle = new GUIStyle(_buttonStyle) { fontSize = 24, fixedHeight = 80, fixedWidth = 250, fontStyle = FontStyle.Bold };
-        if (cur == VerdictType.Guilty) gStyle.normal.textColor = Color.red;
+        gStyle.normal.textColor = cur == VerdictType.Guilty ? Color.red : defaultColor;
         if (GUILayout.Button("ВИНОВЕН", gStyle)) { _verdicts.SetVerdict(VerdictType.Guilty); _verdictChosen = true; }
+
         GUILayout.Space(40);
-        var ngStyle = new GUIStyle(gStyle);
-        ngStyle.normal.textColor = cur == VerdictType.NotGuilty ? Color.green : gStyle.normal.textColor;
-        if (cur != VerdictType.Guilty) ngStyle.normal.textColor = cur == VerdictType.NotGuilty ? Color.green : GUI.skin.button.normal.textColor;
+
+        var ngStyle = new GUIStyle(_buttonStyle) { fontSize = 24, fixedHeight = 80, fixedWidth = 250, fontStyle = FontStyle.Bold };
+        ngStyle.normal.textColor = cur == VerdictType.NotGuilty ? Color.green : defaultColor;
         if (GUILayout.Button("НЕ ВИНОВЕН", ngStyle)) { _verdicts.SetVerdict(VerdictType.NotGuilty); _verdictChosen = true; }
         GUILayout.FlexibleSpace(); GUILayout.EndHorizontal();
         GUILayout.Space(40);
