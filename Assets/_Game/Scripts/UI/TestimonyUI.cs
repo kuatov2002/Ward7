@@ -36,7 +36,7 @@ public class TestimonyUI : MonoBehaviour, IPanelController
         title.AddToClassList("header");
         panel.Add(title);
 
-        var sub = new Label("Три источника. Запросите уточнение у ОДНОГО.");
+        var sub = new Label("Три источника дали показания. Вы можете запросить уточнение только у ОДНОГО. Базовые показания видны всегда — уточнение раскрывает скрытые детали.");
         sub.AddToClassList("text");
         panel.Add(sub);
 
@@ -99,6 +99,11 @@ public class TestimonyUI : MonoBehaviour, IPanelController
         if (s.contradictions != null && s.contradictions.Length > 0)
         {
             scroll.Add(Spacer(15));
+            var contrExplain = new Label("Система автоматически сравнила показания и нашла расхождения:");
+            contrExplain.AddToClassList("text-small");
+            contrExplain.AddToClassList("text-dim");
+            scroll.Add(contrExplain);
+
             var contrHeader = new Label("ОБНАРУЖЕННЫЕ ПРОТИВОРЕЧИЯ:");
             contrHeader.AddToClassList("text-bold");
             contrHeader.style.color = new Color(1f, 0.4f, 0.3f);

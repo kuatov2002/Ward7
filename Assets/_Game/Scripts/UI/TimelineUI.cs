@@ -68,8 +68,8 @@ public class TimelineUI : MonoBehaviour, IPanelController
         int remaining = s.maxContradictionAttempts - _attemptsUsed;
 
         var sub = new Label(_selectedEntry != null
-            ? "Выберите второе событие которое противоречит первому."
-            : "Изучите хронологию. Найдите пары событий которые не могут быть правдой одновременно.");
+            ? "Теперь кликните на событие которое противоречит выбранному."
+            : "Изучите хронологию. Кликните на одно событие, затем на другое — если они противоречат друг другу, нестыковка будет зафиксирована. Например: свидетель говорит что подозреваемый уехал, но журнал показывает его вход позже.");
         sub.AddToClassList("text");
         sub.AddToClassList("text-dim");
         panel.Add(sub);

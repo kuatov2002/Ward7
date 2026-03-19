@@ -36,7 +36,7 @@ public class ContactUI : MonoBehaviour, IPanelController
         title.AddToClassList("header");
         panel.Add(title);
 
-        var sub = new Label("Выберите одного для звонка:");
+        var sub = new Label("Выберите одного для звонка. Это единственный звонок за день — выбирайте внимательно.");
         sub.AddToClassList("text");
         panel.Add(sub);
 
@@ -92,7 +92,7 @@ public class ContactUI : MonoBehaviour, IPanelController
             }
             else
             {
-                var unavail = new Label("[недоступен]");
+                var unavail = new Label("[выбор сделан — недоступен]");
                 unavail.AddToClassList("text");
                 unavail.AddToClassList("text-gray");
                 box.Add(unavail);

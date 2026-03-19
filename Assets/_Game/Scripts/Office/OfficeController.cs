@@ -64,6 +64,9 @@ public class OfficeController : MonoBehaviour
         // Start ambient sounds
         if (ProceduralAudio.Instance != null)
             ProceduralAudio.Instance.StartAmbient();
+
+        // Show controls hint for first-time players
+        UIManager.Instance.ShowControlsHint();
     }
 
     public void OpenPanel(string panelName)
@@ -98,7 +101,15 @@ public class OfficeController : MonoBehaviour
 
         if (!canAdvance)
         {
-            UIManager.Instance.ShowHint("Сначала сделайте выбор");
+            string[] hints = {
+                "",
+                "Позвоните контакту (телефон на столе)",
+                "Выберите приоритетную улику (папки на столе)",
+                "Запросите уточнение у свидетеля (компьютер)",
+                "Завершите допрос (блокнот на столе)"
+            };
+            string hint = d >= 1 && d <= 4 ? hints[d] : "Сначала сделайте выбор";
+            UIManager.Instance.ShowHint(hint);
             return;
         }
 

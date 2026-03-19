@@ -39,7 +39,7 @@ public class OutcomeUI : MonoBehaviour, IPanelController
         }
         else if (headlines.Count == 0)
         {
-            var noNews = new Label("— Без происшествий —");
+            var noNews = new Label("— Новых последствий нет —");
             noNews.AddToClassList("header-center");
             panel.Add(noNews);
         }
@@ -48,6 +48,12 @@ public class OutcomeUI : MonoBehaviour, IPanelController
             var hdr = new Label("ПОСЛЕДСТВИЯ ВАШИХ РЕШЕНИЙ:");
             hdr.AddToClassList("header");
             panel.Add(hdr);
+
+            var consExplain = new Label("Ваши вердикты предыдущих недель привели к этим событиям:");
+            consExplain.AddToClassList("text-small");
+            consExplain.AddToClassList("text-dim");
+            panel.Add(consExplain);
+
             panel.Add(Spacer(10));
 
             foreach (var h in headlines)

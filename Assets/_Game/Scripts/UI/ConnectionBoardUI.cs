@@ -57,6 +57,12 @@ public class ConnectionBoardUI : MonoBehaviour, IPanelController
         int found = _foundPairs.Count;
         int total = s.connections != null ? s.connections.Length : 0;
 
+        var tutorial = new Label("Кликните на одну карточку, затем на другую чтобы проверить связь. Правильная пара раскроет скрытую информацию. Количество попыток ограничено.");
+        tutorial.AddToClassList("text-small");
+        tutorial.AddToClassList("text-dim");
+        panel.Add(tutorial);
+        panel.Add(Spacer(5));
+
         var info = new Label($"Связей найдено: {found}/{total}  |  Попыток осталось: {remaining}");
         info.AddToClassList("text");
         info.AddToClassList("text-amber");

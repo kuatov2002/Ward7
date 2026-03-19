@@ -236,6 +236,7 @@ public class SceneSetup : MonoBehaviour
         dossier.transform.SetParent(parent.transform);
         var dossierObj = dossier.AddComponent<DeskObject>();
         dossierObj.panelName = "dossier-panel";
+        dossierObj.displayName = "Досье";
         dossierObj.visibleOnDay = 1;
         dossierObj.visibleFromDayOnward = true;
         objects.Add(dossierObj);
@@ -247,6 +248,7 @@ public class SceneSetup : MonoBehaviour
         phoneBase.transform.SetParent(parent.transform);
         var phoneObj = phoneBase.AddComponent<DeskObject>();
         phoneObj.panelName = "contact-panel";
+        phoneObj.displayName = "Телефон — Контакты";
         phoneObj.visibleOnDay = 1;
         var phoneAnim = phoneBase.AddComponent<DeskObjectAnimator>();
         phoneAnim.animType = DeskObjectAnimator.AnimationType.PhoneVibrate;
@@ -268,6 +270,7 @@ public class SceneSetup : MonoBehaviour
         evBox.center = new Vector3(0f, 0.03f, 0f);
         var evObj = evidenceParent.AddComponent<DeskObject>();
         evObj.panelName = "evidence-panel";
+        evObj.displayName = "Папки с уликами";
         evObj.visibleOnDay = 2;
         var evAnim = evidenceParent.AddComponent<DeskObjectAnimator>();
         evAnim.animType = DeskObjectAnimator.AnimationType.GlowPulse;
@@ -283,6 +286,7 @@ public class SceneSetup : MonoBehaviour
         monitorScreen.transform.SetParent(parent.transform);
         var monObj = monitorScreen.AddComponent<DeskObject>();
         monObj.panelName = "testimony-panel";
+        monObj.displayName = "Компьютер — Показания";
         monObj.visibleOnDay = 3;
         objects.Add(monObj);
 
@@ -292,6 +296,7 @@ public class SceneSetup : MonoBehaviour
         notepad.transform.SetParent(parent.transform);
         var noteObj = notepad.AddComponent<DeskObject>();
         noteObj.panelName = "interrogation-panel";
+        noteObj.displayName = "Протокол допроса";
         noteObj.visibleOnDay = 4;
         objects.Add(noteObj);
 
@@ -301,6 +306,7 @@ public class SceneSetup : MonoBehaviour
         stamp.transform.SetParent(parent.transform);
         var stampObj = stamp.AddComponent<DeskObject>();
         stampObj.panelName = "briefing-panel";
+        stampObj.displayName = "Печать — Вердикт";
         stampObj.visibleOnDay = 5;
         var stampAnim = stamp.AddComponent<DeskObjectAnimator>();
         stampAnim.animType = DeskObjectAnimator.AnimationType.StampReady;
@@ -313,6 +319,7 @@ public class SceneSetup : MonoBehaviour
         calendar.transform.SetParent(parent.transform);
         var calObj = calendar.AddComponent<DeskObject>();
         calObj.isCalendar = true;
+        calObj.displayName = "Календарь — Следующий день";
         calObj.visibleOnDay = -1;
         objects.Add(calObj);
 
@@ -323,6 +330,7 @@ public class SceneSetup : MonoBehaviour
         boardTrigger.transform.SetParent(parent.transform);
         var boardObj = boardTrigger.AddComponent<DeskObject>();
         boardObj.panelName = "connection-panel";
+        boardObj.displayName = "Доска связей";
         boardObj.visibleOnDay = 1;
         boardObj.visibleFromDayOnward = true;
         objects.Add(boardObj);
@@ -333,6 +341,7 @@ public class SceneSetup : MonoBehaviour
         timeline.transform.SetParent(parent.transform);
         var tlObj = timeline.AddComponent<DeskObject>();
         tlObj.panelName = "timeline-panel";
+        tlObj.displayName = "Хронология событий";
         tlObj.visibleOnDay = 4;
         tlObj.visibleFromDayOnward = true;
         objects.Add(tlObj);

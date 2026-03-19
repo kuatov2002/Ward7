@@ -68,6 +68,11 @@ public class InterrogationUI : MonoBehaviour, IPanelController
             barBg.Add(barFill);
             pressureRow.Add(barBg);
             panel.Add(pressureRow);
+
+            var pressExplain = new Label("Чем выше давление — тем больше шанс что подозреваемый замкнётся и откажется отвечать.");
+            pressExplain.AddToClassList("text-small");
+            pressExplain.AddToClassList("text-dim");
+            panel.Add(pressExplain);
         }
 
         bool shutdown = pressure.IsShutdown(s.pressureThreshold);
@@ -211,6 +216,12 @@ public class InterrogationUI : MonoBehaviour, IPanelController
                         condHeader.AddToClassList("text-bold");
                         condHeader.AddToClassList("text-yellow");
                         scroll.Add(condHeader);
+
+                        var condExplain = new Label("Эти вопросы доступны благодаря вашим предыдущим выборам (контакт, улика, показания).");
+                        condExplain.AddToClassList("text-small");
+                        condExplain.AddToClassList("text-dim");
+                        scroll.Add(condExplain);
+
                         scroll.Add(Spacer(5));
                         hasAny = true;
                     }
@@ -242,6 +253,12 @@ public class InterrogationUI : MonoBehaviour, IPanelController
             bluffHeader.AddToClassList("text-bold");
             bluffHeader.style.color = new Color(1f, 0.4f, 0.4f);
             scroll.Add(bluffHeader);
+
+            var bluffExplain = new Label("Блеф сработает если у вас есть подтверждающая улика. Провал закроет дополнительные вопросы.");
+            bluffExplain.AddToClassList("text-small");
+            bluffExplain.AddToClassList("text-dim");
+            scroll.Add(bluffExplain);
+
             scroll.Add(Spacer(5));
 
             foreach (var bq in s.bluffQuestions)

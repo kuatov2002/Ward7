@@ -14,6 +14,7 @@ public class UIManager : MonoBehaviour
     VisualElement _crosshair;
     Label _dayHint;
     Label _interactHint;
+    Label _controlsHint;
 
     readonly Dictionary<string, VisualElement> _panels = new();
     string _activePanel;
@@ -43,6 +44,7 @@ public class UIManager : MonoBehaviour
         _crosshair = _root.Q<VisualElement>("crosshair");
         _dayHint = _root.Q<Label>("day-hint");
         _interactHint = _root.Q<Label>("interact-hint");
+        _controlsHint = _root.Q<Label>("controls-hint");
 
         string[] panelNames = {
             "main-menu-panel", "outcome-panel", "dossier-panel",
@@ -135,6 +137,22 @@ public class UIManager : MonoBehaviour
         if (_interactHint == null) return;
         _interactHint.text = $"[E] {objectName}";
         _interactHint.RemoveFromClassList("hidden");
+    }
+
+    public void ShowControlsHint()
+    {
+        EnsureInit();
+        if (_controlsHint == null) return;
+        _controlsHint.text = "Управление:\nМышь — осмотреться\nЛКМ / E — взаимодействие\nEsc / ПКМ — закрыть документ";
+        _controlsHint.RemoveFromClassList("hidden");
+        StartCoroutine(HideControlsAfter(8f));
+    }
+
+    System.Collections.IEnumerator HideControlsAfter(float sec)
+    {
+        yield return new WaitForSeconds(sec);
+        if (_controlsHint != null)
+            _controlsHint.AddToClassList("hidden");
     }
 
     public void HideInteractHint()

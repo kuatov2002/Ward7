@@ -39,7 +39,11 @@ public class RaycastInteraction : MonoBehaviour
             {
                 _current.SetHighlight(true);
                 if (UIManager.Instance != null)
-                    UIManager.Instance.ShowInteractHint(_current.gameObject.name);
+                {
+                    string hint = !string.IsNullOrEmpty(_current.displayName)
+                        ? _current.displayName : _current.gameObject.name;
+                    UIManager.Instance.ShowInteractHint(hint);
+                }
             }
             else
             {

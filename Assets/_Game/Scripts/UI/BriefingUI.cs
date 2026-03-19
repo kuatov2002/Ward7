@@ -121,7 +121,7 @@ public class BriefingUI : MonoBehaviour, IPanelController
 
             panel.Add(Spacer(10));
 
-            var instrLabel = new Label($"Выберите до {MaxArguments} ключевых доводов для обоснования:");
+            var instrLabel = new Label($"Выберите до {MaxArguments} доводов В ПОДДЕРЖКУ вашего вердикта. Доводы противоречащие вердикту снизят оценку комиссии.");
             instrLabel.AddToClassList("text");
             instrLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
             panel.Add(instrLabel);

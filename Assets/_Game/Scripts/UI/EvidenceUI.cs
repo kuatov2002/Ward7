@@ -41,7 +41,7 @@ public class EvidenceUI : MonoBehaviour, IPanelController
 
         var sub = new Label(done
             ? "Приоритетная улика проанализирована полностью. Остальные — частично."
-            : "Выберите приоритетную улику для полной экспертизы.");
+            : "Все улики будут исследованы, но только ОДНА получит полный анализ. Остальные — частично. Полный анализ может разблокировать вопросы на допросе.");
         sub.AddToClassList("text");
         panel.Add(sub);
         panel.Add(Spacer());
@@ -90,7 +90,7 @@ public class EvidenceUI : MonoBehaviour, IPanelController
                     box.Add(tag);
                     box.Add(Spacer(3));
                     string partial = GetPartialText(ev.expertDescription, 2);
-                    var partialLabel = new Label(partial + " [Анализ не завершён...]");
+                    var partialLabel = new Label(partial + " [Анализ не завершён — выберите эту улику приоритетной для полного результата]");
                     partialLabel.AddToClassList("text");
                     partialLabel.AddToClassList("text-gray");
                     box.Add(partialLabel);
@@ -114,6 +114,11 @@ public class EvidenceUI : MonoBehaviour, IPanelController
         }
 
         panel.Add(scroll);
+
+        var noteHint = new Label("Совет: кликните по тексту чтобы сделать заметку для вердикта");
+        noteHint.AddToClassList("text-small");
+        noteHint.AddToClassList("text-dim");
+        panel.Add(noteHint);
     }
 
     public void OnHide() { }

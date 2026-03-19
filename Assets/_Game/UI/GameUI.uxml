@@ -27,4 +27,7 @@
 
     <!-- Interaction hint (below crosshair) -->
     <ui:Label name="interact-hint" class="interact-hint hidden" />
+
+    <!-- Controls hint (top-left, shown on game start) -->
+    <ui:Label name="controls-hint" class="controls-hint hidden" />
 </ui:UXML>

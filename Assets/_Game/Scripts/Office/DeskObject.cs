@@ -2,8 +2,11 @@ using UnityEngine;
 
 public class DeskObject : MonoBehaviour
 {
-    [Tooltip("Panel name to open in UIManager (e.g. dossier-panel, contact-panel)")]
+    [Tooltip("Panel name to open in UIManager")]
     public string panelName;
+
+    [Tooltip("Player-facing name shown in interact hint")]
+    public string displayName;
 
     [Tooltip("-1 = always visible, 0 = outcome, 1 = monday, etc.")]
     public int visibleOnDay = -1;
