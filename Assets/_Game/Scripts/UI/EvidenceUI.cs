@@ -19,6 +19,7 @@ public class EvidenceUI : MonoBehaviour, IPanelController
         var cases = ServiceLocator.Get<CaseService>();
         var choices = ServiceLocator.Get<DailyChoiceService>();
         var state = ServiceLocator.Get<GameStateService>();
+        var notes = ServiceLocator.Get<NoteService>();
         var s = cases.ActiveCase;
         if (s == null) return;
         int w = state.CurrentWeek;
@@ -35,18 +36,19 @@ public class EvidenceUI : MonoBehaviour, IPanelController
         title.AddToClassList("header");
         panel.Add(title);
 
-        var sub = new Label("Изучите все улики. Отправьте ОДНУ на экспертизу.");
+        bool done = choices.IsChosen(w, ChoiceType.Evidence);
+        string sel = choices.GetSelected(w, ChoiceType.Evidence);
+
+        var sub = new Label(done
+            ? "Приоритетная улика проанализирована полностью. Остальные — частично."
+            : "Выберите приоритетную улику для полной экспертизы.");
         sub.AddToClassList("text");
         panel.Add(sub);
-
         panel.Add(Spacer());
 
         var scroll = new ScrollView(ScrollViewMode.Vertical);
         scroll.style.maxHeight = 500;
         scroll.style.flexGrow = 1;
-
-        bool done = choices.IsChosen(w, ChoiceType.Evidence);
-        string sel = choices.GetSelected(w, ChoiceType.Evidence);
 
         foreach (var ev in s.evidence)
         {
@@ -59,35 +61,53 @@ public class EvidenceUI : MonoBehaviour, IPanelController
             box.Add(evTitle);
             box.Add(Spacer(5));
 
-            if (mine)
+            // Base description — always visible, clickable for notes
+            var baseLabel = new Label(ev.baseDescription);
+            baseLabel.AddToClassList("text");
+            MakeNoteable(baseLabel, ev.baseDescription, $"evidence_{ev.evidenceId}", w, notes);
+            box.Add(baseLabel);
+
+            if (done)
             {
-                var tag = new Label("[ОТПРАВЛЕНО НА ЭКСПЕРТИЗУ]");
-                tag.AddToClassList("text");
-                tag.AddToClassList("text-cyan");
-                box.Add(tag);
                 box.Add(Spacer(5));
-                var expert = new Label(ev.expertDescription);
-                expert.AddToClassList("text");
-                box.Add(expert);
+                if (mine)
+                {
+                    var tag = new Label("[ПОЛНАЯ ЭКСПЕРТИЗА]");
+                    tag.AddToClassList("text");
+                    tag.AddToClassList("text-cyan");
+                    box.Add(tag);
+                    box.Add(Spacer(3));
+                    var expert = new Label(ev.expertDescription);
+                    expert.AddToClassList("text");
+                    MakeNoteable(expert, ev.expertDescription, $"expert_{ev.evidenceId}", w, notes);
+                    box.Add(expert);
+                }
+                else
+                {
+                    var tag = new Label("[ЧАСТИЧНЫЙ АНАЛИЗ]");
+                    tag.AddToClassList("text");
+                    tag.AddToClassList("text-yellow");
+                    box.Add(tag);
+                    box.Add(Spacer(3));
+                    string partial = GetPartialText(ev.expertDescription, 2);
+                    var partialLabel = new Label(partial + " [Анализ не завершён...]");
+                    partialLabel.AddToClassList("text");
+                    partialLabel.AddToClassList("text-gray");
+                    box.Add(partialLabel);
+                }
             }
             else
             {
-                var desc = new Label(ev.baseDescription);
-                desc.AddToClassList("text");
-                box.Add(desc);
-
-                if (!done)
-                {
-                    box.Add(Spacer(5));
-                    var btn = new Button(() => {
-                        choices.Commit(w, ChoiceType.Evidence, ev.evidenceId);
-                        OnShow();
-                    });
-                    btn.text = "Отправить на экспертизу";
-                    btn.AddToClassList("btn-small");
-                    btn.style.width = 220;
-                    box.Add(btn);
-                }
+                box.Add(Spacer(5));
+                string eid = ev.evidenceId;
+                var btn = new Button(() => {
+                    choices.Commit(w, ChoiceType.Evidence, eid);
+                    OnShow();
+                });
+                btn.text = "Приоритет на экспертизу";
+                btn.AddToClassList("btn-small");
+                btn.style.width = 240;
+                box.Add(btn);
             }
 
             scroll.Add(box);
@@ -97,6 +117,45 @@ public class EvidenceUI : MonoBehaviour, IPanelController
     }
 
     public void OnHide() { }
+
+    static string GetPartialText(string full, int sentences)
+    {
+        if (string.IsNullOrEmpty(full)) return "";
+        int count = 0;
+        for (int i = 0; i < full.Length; i++)
+        {
+            if (full[i] == '.' || full[i] == '!' || full[i] == '?')
+            {
+                count++;
+                if (count >= sentences)
+                    return full.Substring(0, i + 1);
+            }
+        }
+        return full;
+    }
+
+    static void MakeNoteable(Label label, string text, string source, int week, NoteService notes)
+    {
+        if (notes.HasNote(week, text))
+            label.AddToClassList("text-noted");
+
+        label.RegisterCallback<ClickEvent>(evt => {
+            if (notes.HasNote(week, text))
+            {
+                notes.RemoveNote(week, text);
+                label.RemoveFromClassList("text-noted");
+            }
+            else
+            {
+                notes.AddNote(week, text, source);
+                label.AddToClassList("text-noted");
+                if (ProceduralAudio.Instance != null)
+                    ProceduralAudio.Instance.PlayPaperFlip();
+            }
+            if (EvidenceBoard.Instance != null)
+                EvidenceBoard.Instance.RefreshFromChoices();
+        });
+    }
 
     static VisualElement Spacer(int h = 10)
     {

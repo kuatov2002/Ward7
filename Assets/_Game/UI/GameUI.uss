@@ -117,6 +117,14 @@
     white-space: normal;
 }
 
+.text-noted {
+    border-bottom-width: 2px;
+    border-bottom-color: var(--text-yellow);
+    background-color: rgba(240, 220, 80, 0.08);
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
 .text-green {
     color: var(--text-green);
 }

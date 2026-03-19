@@ -19,6 +19,7 @@ public class TestimonyUI : MonoBehaviour, IPanelController
         var cases = ServiceLocator.Get<CaseService>();
         var choices = ServiceLocator.Get<DailyChoiceService>();
         var state = ServiceLocator.Get<GameStateService>();
+        var notes = ServiceLocator.Get<NoteService>();
         var s = cases.ActiveCase;
         if (s == null) return;
         int w = state.CurrentWeek;
@@ -61,6 +62,7 @@ public class TestimonyUI : MonoBehaviour, IPanelController
 
             var baseText = new Label(t.baseTestimony);
             baseText.AddToClassList("text");
+            MakeNoteable(baseText, t.baseTestimony, $"testimony_{t.witnessName}", w, notes);
             box.Add(baseText);
 
             if (mine)
@@ -73,13 +75,15 @@ public class TestimonyUI : MonoBehaviour, IPanelController
                 box.Add(Spacer(5));
                 var clar = new Label(t.clarification);
                 clar.AddToClassList("text");
+                MakeNoteable(clar, t.clarification, $"clarification_{t.witnessName}", w, notes);
                 box.Add(clar);
             }
             else if (!done)
             {
                 box.Add(Spacer(5));
+                string wName = t.witnessName;
                 var btn = new Button(() => {
-                    choices.Commit(w, ChoiceType.Testimony, t.witnessName);
+                    choices.Commit(w, ChoiceType.Testimony, wName);
                     OnShow();
                 });
                 btn.text = "Запросить уточнение";
@@ -91,10 +95,65 @@ public class TestimonyUI : MonoBehaviour, IPanelController
             scroll.Add(box);
         }
 
+        // ─── CONTRADICTIONS ───
+        if (s.contradictions != null && s.contradictions.Length > 0)
+        {
+            scroll.Add(Spacer(15));
+            var contrHeader = new Label("ОБНАРУЖЕННЫЕ ПРОТИВОРЕЧИЯ:");
+            contrHeader.AddToClassList("text-bold");
+            contrHeader.style.color = new Color(1f, 0.4f, 0.3f);
+            scroll.Add(contrHeader);
+            scroll.Add(Spacer(5));
+
+            foreach (var c in s.contradictions)
+            {
+                var box = new VisualElement();
+                box.AddToClassList("box");
+                box.style.borderLeftWidth = 3;
+                box.style.borderLeftColor = new Color(1f, 0.3f, 0.3f);
+
+                var header = new Label($"{c.witnessA} \u2260 {c.witnessB}");
+                header.AddToClassList("text-bold");
+                header.style.color = new Color(1f, 0.5f, 0.4f);
+                box.Add(header);
+                box.Add(Spacer(3));
+
+                var desc = new Label(c.description);
+                desc.AddToClassList("text");
+                MakeNoteable(desc, c.description, "contradiction", w, notes);
+                box.Add(desc);
+
+                scroll.Add(box);
+            }
+        }
+
         panel.Add(scroll);
     }
 
     public void OnHide() { }
+
+    static void MakeNoteable(Label label, string text, string source, int week, NoteService notes)
+    {
+        if (notes.HasNote(week, text))
+            label.AddToClassList("text-noted");
+
+        label.RegisterCallback<ClickEvent>(evt => {
+            if (notes.HasNote(week, text))
+            {
+                notes.RemoveNote(week, text);
+                label.RemoveFromClassList("text-noted");
+            }
+            else
+            {
+                notes.AddNote(week, text, source);
+                label.AddToClassList("text-noted");
+                if (ProceduralAudio.Instance != null)
+                    ProceduralAudio.Instance.PlayPaperFlip();
+            }
+            if (EvidenceBoard.Instance != null)
+                EvidenceBoard.Instance.RefreshFromChoices();
+        });
+    }
 
     static VisualElement Spacer(int h = 10)
     {

@@ -24,6 +24,8 @@ public class GameManager : MonoBehaviour
     DailyChoiceService _choices;
     VerdictService _verdicts;
     ConsequenceService _conseq;
+    NoteService _notes;
+    PressureService _pressure;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoBootstrap()
@@ -51,16 +53,18 @@ public class GameManager : MonoBehaviour
         _conseq = new ConsequenceService(_save);
         _choices = new DailyChoiceService(_save);
         _verdicts = new VerdictService(_conseq, _save);
+        _notes = new NoteService(_save);
+        _pressure = new PressureService(_save);
         ServiceLocator.Register(_save);
         ServiceLocator.Register(_state);
         ServiceLocator.Register(_cases);
         ServiceLocator.Register(_choices);
         ServiceLocator.Register(_conseq);
         ServiceLocator.Register(_verdicts);
+        ServiceLocator.Register(_notes);
+        ServiceLocator.Register(_pressure);
         _cases.LoadAll();
     }
-
-    // ─── PUBLIC API for UI panels ───
 
     public void StartNewGame()
     {
@@ -69,10 +73,14 @@ public class GameManager : MonoBehaviour
         _choices = new DailyChoiceService(_save);
         _conseq = new ConsequenceService(_save);
         _verdicts = new VerdictService(_conseq, _save);
+        _notes = new NoteService(_save);
+        _pressure = new PressureService(_save);
         ServiceLocator.Register(_state);
         ServiceLocator.Register(_choices);
         ServiceLocator.Register(_conseq);
         ServiceLocator.Register(_verdicts);
+        ServiceLocator.Register(_notes);
+        ServiceLocator.Register(_pressure);
         _cases.LoadWeek(1);
     }
 

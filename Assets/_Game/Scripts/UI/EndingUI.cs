@@ -56,6 +56,14 @@ public class EndingUI : MonoBehaviour, IPanelController
             verdictLabel.AddToClassList(correct ? "text-green" : "text-red");
             box.Add(verdictLabel);
 
+            if (v.justificationScore > 0)
+            {
+                var scoreLabel = new Label($"Обоснование: {v.justificationScore} баллов");
+                scoreLabel.AddToClassList("text");
+                scoreLabel.AddToClassList("text-yellow");
+                box.Add(scoreLabel);
+            }
+
             if (suspect != null)
             {
                 string c = v.verdict == VerdictType.Guilty

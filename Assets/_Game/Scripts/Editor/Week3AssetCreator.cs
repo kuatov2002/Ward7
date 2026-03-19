@@ -128,6 +128,60 @@ public static class Week3AssetCreator
         s.consequenceGuilty = "Артём Белов приговорён к 4 годам. Через полгода — новая утечка данных из «МедЛайн»: 30 000 записей. Белов в это время в заключении. Дело Зотова открыто. Ольга Белова подала на развод — не выдержала.";
         s.consequenceNotGuilty = "Следствие переключилось на Игоря Зотова. Обнаружен анонимный криптовалютный кошелёк с поступлениями от двух страховых компаний. Зотов задержан при попытке продать следующую партию данных. Белов восстановлен на работе.";
 
+        s.pressureThreshold = 4;
+
+        s.bluffQuestions = new BluffQuestionData[]
+        {
+            new BluffQuestionData
+            {
+                question = "Мы отследили IP-адрес продавца данных. Он ведёт прямо к вашему ноутбуку.",
+                answerSuccess = "(Растерянно.) Это... это невозможно. Мой ноутбук был дома в ту ночь. Проверьте MAC-адрес!",
+                answerFail = "(Уверенно.) Проверяйте. Мой ноутбук чист. Я даже могу дать его на экспертизу прямо сейчас.",
+                requiredChoiceType = ChoiceType.Evidence,
+                requiredChoiceId = "evidence_serverlogs",
+                pressureChange = 2
+            },
+            new BluffQuestionData
+            {
+                question = "Ваш начальник Зотов передал нам вашу переписку с покупателем данных.",
+                answerSuccess = "(Вспыхивает.) Зотов?! Это он! Он подставил меня! Спросите его откуда у него $50,000!",
+                answerFail = "(Тихо.) Такой переписки не существует. Потому что я не продавал данные.",
+                requiredChoiceType = ChoiceType.Testimony,
+                requiredChoiceId = "Нэш",
+                pressureChange = 2
+            }
+        };
+
+        s.contradictions = new ContradictionData[]
+        {
+            new ContradictionData
+            {
+                witnessA = "Коул",
+                witnessB = "Пэйдж",
+                description = "Коул считает улики против Белова железными — логин, флешка, задержки допоздна. Пэйдж обнаружила что MAC-адрес в логах не принадлежит ноутбуку Белова."
+            },
+            new ContradictionData
+            {
+                witnessA = "Коул",
+                witnessB = "Нэш",
+                description = "Коул уверен в виновности Белова — классический инсайдер. Нэш указывает что у Белова нет подозрительных поступлений, а Зотов обналичил $50,000."
+            }
+        };
+
+        s.arguments = new ArgumentData[]
+        {
+            new ArgumentData { argumentId = "arg_1", text = "Доступ к базе осуществлён с учётной записи Белова", supportsGuilty = true, weight = 1 },
+            new ArgumentData { argumentId = "arg_2", text = "USB-накопитель с данными найден в столе Белова", supportsGuilty = true, weight = 1 },
+            new ArgumentData { argumentId = "arg_3", text = "Белов задерживался допоздна — имел возможность", supportsGuilty = true, weight = 1 },
+            new ArgumentData { argumentId = "arg_4", text = "MAC-адрес в логах принадлежит рабочей станции Зотова", supportsGuilty = false, weight = 3 },
+            new ArgumentData { argumentId = "arg_5", text = "Файлы записаны в 02:15 — Белов уехал в 22:30", supportsGuilty = false, weight = 2 },
+            new ArgumentData { argumentId = "arg_6", text = "У Белова нет подозрительных денежных поступлений", supportsGuilty = false, weight = 2 },
+            new ArgumentData { argumentId = "arg_7", text = "Зотов обналичил $50,000 без чеков за стройматериалы", supportsGuilty = false, weight = 2 },
+            new ArgumentData { argumentId = "arg_8", text = "Лингвистический анализ указывает на терминологию Зотова", supportsGuilty = false, weight = 2 },
+            new ArgumentData { argumentId = "arg_9", text = "Стиль переписки похож на Белова (технический жаргон)", supportsGuilty = true, weight = 1 },
+            new ArgumentData { argumentId = "arg_10", text = "Зотов имел полный доступ как администратор системы", supportsGuilty = false, weight = 2 }
+        };
+
         SaveAsset(s, "suspect_03_belov");
     }
 

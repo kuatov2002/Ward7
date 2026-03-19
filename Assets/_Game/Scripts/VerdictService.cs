@@ -1,5 +1,3 @@
-using System;
-
 public class VerdictService
 {
     VerdictType _pending = VerdictType.None;
@@ -15,7 +13,7 @@ public class VerdictService
     public void SetVerdict(VerdictType verdict) => _pending = verdict;
     public VerdictType GetVerdict() => _pending;
 
-    public void CommitAll(string suspectId, int currentWeek, SuspectSO suspect)
+    public void CommitAll(string suspectId, int currentWeek, SuspectSO suspect, int justificationScore = 0)
     {
         if (_pending == VerdictType.None)
             return;
@@ -26,9 +24,15 @@ public class VerdictService
         {
             suspectId = suspectId,
             verdict = _pending,
-            week = currentWeek
+            week = currentWeek,
+            justificationScore = justificationScore
         });
         _save.Save();
+
+        // Reset pressure for next week
+        var pressure = ServiceLocator.Get<PressureService>();
+        if (pressure != null) pressure.ResetForWeek();
+
         _pending = VerdictType.None;
     }
 }

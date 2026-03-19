@@ -131,6 +131,14 @@ public class EvidenceBoard : MonoBehaviour
         string followUpSel = choices.GetSelected(w, ChoiceType.FollowUp);
         if (!string.IsNullOrEmpty(followUpSel))
             AddCard(followUpSel, new Color(0.7f, 0.4f, 0.5f)); // pink
+
+        // Player notes as small yellow cards
+        var notesSvc = ServiceLocator.Get<NoteService>();
+        if (notesSvc != null)
+        {
+            foreach (var note in notesSvc.GetNotes(w))
+                AddCard(note.text, new Color(0.8f, 0.75f, 0.3f)); // yellow
+        }
     }
 
     void SetMat(GameObject go, Color color)

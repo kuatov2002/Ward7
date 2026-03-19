@@ -12,6 +12,7 @@ public static class Week1AssetCreator
         s.displayName = "Марк Холлоуэй";
         s.weekNumber = 1;
         s.isGuilty = false; // НЕ ВИНОВЕН — пожар организовал Салас
+        s.pressureThreshold = 5;
 
         s.dossierText =
 @"Марк Холлоуэй, 44 года. Поджог собственного склада с целью получения страховой выплаты. Один рабочий — Сантьяго Гомес, 31 год — погиб при пожаре.
@@ -121,22 +122,26 @@ public static class Week1AssetCreator
             new InterrogationQA
             {
                 question = "Где вы были в ночь пожара?",
-                answer = "«На складе до одиннадцати — проверял документы для адвоката. Потом домой. Жена не спала, мы поговорили. Узнал о пожаре от пожарных около двух ночи.»"
+                answer = "«На складе до одиннадцати — проверял документы для адвоката. Потом домой. Жена не спала, мы поговорили. Узнал о пожаре от пожарных около двух ночи.»",
+                pressureChange = 0
             },
             new InterrogationQA
             {
                 question = "Склад застрахован вдвое выше стоимости. Это ваша инициатива?",
-                answer = "«Переоценку делали в 2021-м. Мы с Виктором оба подписали. Я не помню кто предложил первым. Это стандартная практика при расширении.»"
+                answer = "«Переоценку делали в 2021-м. Мы с Виктором оба подписали. Я не помню кто предложил первым. Это стандартная практика при расширении.»",
+                pressureChange = 1
             },
             new InterrogationQA
             {
                 question = "У вас долг $180 000. Страховая выплата покрыла бы его полностью?",
-                answer = "«Да, и что? У меня работающий бизнес. Муниципальный контракт. Зачем мне сжигать то что наконец приносит деньги?»"
+                answer = "«Да, и что? У меня работающий бизнес. Муниципальный контракт. Зачем мне сжигать то что наконец приносит деньги?»",
+                pressureChange = 1
             },
             new InterrogationQA
             {
                 question = "Вы знали что Гомес будет на складе той ночью?",
-                answer = "«Нет. Его не было в расписании. У него трое детей.» (Замолкает.)"
+                answer = "«Нет. Его не было в расписании. У него трое детей.» (Замолкает.)",
+                pressureChange = 1
             }
         };
 
@@ -144,43 +149,53 @@ public static class Week1AssetCreator
         {
             new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_linda",
                 question = "Ваша жена говорит Виктор требовал вашу долю за бесценок. Почему не упомянули?",
-                answer = "«Потому что это выглядит как мотив. Но мой мотив был уйти, а не сжигать. Я хотел продать свою долю — Виктор отказывался платить рыночную цену.»" },
+                answer = "«Потому что это выглядит как мотив. Но мой мотив был уйти, а не сжигать. Я хотел продать свою долю — Виктор отказывался платить рыночную цену.»",
+                pressureChange = 1 },
 
             new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_raul",
                 question = "Бывший сотрудник видел машину Саласа на парковке склада за два дня до пожара. Поздно вечером. Знали об этом?",
-                answer = "(Пауза.) «Нет. Виктор имел право приезжать — это его склад тоже. Но... зачем ночью? Мы к тому моменту почти не разговаривали.» (Задумывается.)" },
+                answer = "(Пауза.) «Нет. Виктор имел право приезжать — это его склад тоже. Но... зачем ночью? Мы к тому моменту почти не разговаривали.» (Задумывается.)",
+                pressureChange = 0 },
 
             new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_holm",
                 question = "Сосед видел вашу машину уезжающей в 23:00. И ещё одну тёмную машину за полчаса до вас. Знаете чья?",
-                answer = "«Тёмная машина? Нет... Подождите. У Виктора тёмно-синий BMW. Но я его не видел той ночью — я приехал позже.»" },
+                answer = "«Тёмная машина? Нет... Подождите. У Виктора тёмно-синий BMW. Но я его не видел той ночью — я приехал позже.»",
+                pressureChange = 0 },
 
             new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Contact, requiredChoiceId = "contact_salas",
                 question = "Салас говорит вы угрожали сжечь склад. Это было?",
-                answer = "(Долгая пауза. Смотрит прямо.) «Я сказал: 'Лучше сожгу всё чем отдам тебе за бесценок.' В запале. Люди говорят всякое когда злятся. Я не поджигатель.»" },
+                answer = "(Долгая пауза. Смотрит прямо.) «Я сказал: 'Лучше сожгу всё чем отдам тебе за бесценок.' В запале. Люди говорят всякое когда злятся. Я не поджигатель.»",
+                pressureChange = 2 },
 
             new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_accesslog",
                 question = "Система перезагрузилась в 23:10. Ваш выход не мог сохраниться. Знали об этом?",
-                answer = "«Нет. Но это объясняет почему нет записи. Я ушёл до перезагрузки — или в это время.»" },
+                answer = "«Нет. Но это объясняет почему нет записи. Я ушёл до перезагрузки — или в это время.»",
+                pressureChange = 1 },
 
             new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_firereport",
                 question = "TechSolv-7 продаётся только корпоративным клиентам. В реестре — только Салас. Откуда это вещество на вашем складе?",
-                answer = "(Бледнеет.) «Я не покупал это вещество. Если оно там было — его принёс Виктор. У него был доступ. Он ушёл в 23:05.»" },
+                answer = "(Бледнеет.) «Я не покупал это вещество. Если оно там было — его принёс Виктор. У него был доступ. Он ушёл в 23:05.»",
+                pressureChange = 1 },
 
             new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Evidence, requiredChoiceId = "evidence_bankstatement",
                 question = "GreenTech связана с бывшим юристом Саласа. Вы платили шантажисту?",
-                answer = "(Молчание. Потом тихо.) «Карл Рид знал про 2004 год. Подробности которые могли меня уничтожить. Виктор видимо нашёл его и... да. Я платил. Но это не делает меня поджигателем.»" },
+                answer = "(Молчание. Потом тихо.) «Карл Рид знал про 2004 год. Подробности которые могли меня уничтожить. Виктор видимо нашёл его и... да. Я платил. Но это не делает меня поджигателем.»",
+                pressureChange = 2 },
 
             new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Коул (старший следователь)",
                 question = "Коул считает GreenTech — шантаж. Кто вас шантажировал и за что?",
-                answer = "(Долгая пауза.) «Человек который знал детали 2004 года. Я думал это закончилось. Не закончилось.»" },
+                answer = "(Долгая пауза.) «Человек который знал детали 2004 года. Я думал это закончилось. Не закончилось.»",
+                pressureChange = 1 },
 
             new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Пэйдж (эксперт-аналитик)",
                 question = "Пэйдж подтверждает: журнал ненадёжен после 22:50. Пожар в 01:30. Где вы были с одиннадцати до двух ночи?",
-                answer = "«Дома. Жена слышала. Я лёг около полуночи. Полтора часа между моим уходом и пожаром. Кто-то поджёг после меня.»" },
+                answer = "«Дома. Жена слышала. Я лёг около полуночи. Полтора часа между моим уходом и пожаром. Кто-то поджёг после меня.»",
+                pressureChange = 1 },
 
             new ConditionalInterrogationQA { requiredChoiceType = ChoiceType.Testimony, requiredChoiceId = "Нэш (полевой агент)",
                 question = "Гомес звонил Саласу семь раз за неделю до пожара. Вы знали что ваш рабочий работал на партнёра?",
-                answer = "(Встаёт. Садится обратно.) «Нет. Гомес был хорошим человеком. Если Виктор использовал его как информатора — он знал что Гомес будет там. Он знал.» (Голос ломается.)" }
+                answer = "(Встаёт. Садится обратно.) «Нет. Гомес был хорошим человеком. Если Виктор использовал его как информатора — он знал что Гомес будет там. Он знал.» (Голос ломается.)",
+                pressureChange = 1 }
         };
 
         s.followUps = new[]
@@ -198,6 +213,61 @@ public static class Week1AssetCreator
 
         s.consequenceGuilty = "Марк Холлоуэй приговорён к 12 годам. Виктор Салас вступил в права на бизнес через 48 часов после приговора. Линда Холлоуэй подала апелляцию. Расследование в отношении Саласа прекращено за недостаточностью доказательств.";
         s.consequenceNotGuilty = "Следствие переключилось на Виктора Саласа. Обнаружены закупки TechSolv-7 за неделю до пожара. Карл Рид пошёл на сотрудничество со следствием. Дело передано в прокуратуру.";
+
+        // ─── БЛЕФ-ВОПРОСЫ ───
+        s.bluffQuestions = new BluffQuestionData[]
+        {
+            new BluffQuestionData
+            {
+                question = "У нас есть свидетель, который видел вас на складе в час ночи. Что скажете?",
+                answerSuccess = "(Бледнеет.) Я... да, я возвращался. Забыл документы. Но ушёл до пожара, клянусь!",
+                answerFail = "(Спокойно.) Это невозможно. Я был дома. Ваш свидетель ошибается или лжёт.",
+                requiredChoiceType = ChoiceType.Contact,
+                requiredChoiceId = "contact_holm",
+                pressureChange = 2
+            },
+            new BluffQuestionData
+            {
+                question = "Мы знаем про ваши платежи Саласу. Зачем вы ему платили?",
+                answerSuccess = "(Долгая пауза.) Не Саласу. GreenTech... Рид шантажировал меня. Из-за 2004 года.",
+                answerFail = "Я не знаю о каких платежах вы говорите. Покажите документы.",
+                requiredChoiceType = ChoiceType.Evidence,
+                requiredChoiceId = "evidence_bankstatement",
+                pressureChange = 2
+            }
+        };
+
+        // ─── ПРОТИВОРЕЧИЯ ───
+        s.contradictions = new ContradictionData[]
+        {
+            new ContradictionData
+            {
+                witnessA = "Коул",
+                witnessB = "Пэйдж",
+                description = "Коул утверждает что два пожара за 20 лет — это паттерн преступника. Пэйдж отмечает что журнал ненадёжен после 22:50 и данные не доказывают присутствие Холлоуэя."
+            },
+            new ContradictionData
+            {
+                witnessA = "Коул",
+                witnessB = "Нэш",
+                description = "Коул видит мотив в страховке и долгах Холлоуэя. Нэш указывает что Салас имел мотив — при осуждении партнёра его доля переходит автоматически."
+            }
+        };
+
+        // ─── АРГУМЕНТЫ ───
+        s.arguments = new ArgumentData[]
+        {
+            new ArgumentData { argumentId = "arg_1", text = "Два пожара за 20 лет — подозрительный паттерн", supportsGuilty = true, weight = 1 },
+            new ArgumentData { argumentId = "arg_2", text = "Страховка вдвое выше стоимости склада", supportsGuilty = true, weight = 2 },
+            new ArgumentData { argumentId = "arg_3", text = "Личный долг $180,000 — мотив для поджога", supportsGuilty = true, weight = 1 },
+            new ArgumentData { argumentId = "arg_4", text = "Холлоуэй присутствовал на складе в ночь пожара", supportsGuilty = true, weight = 1 },
+            new ArgumentData { argumentId = "arg_5", text = "TechSolv-7 зарегистрирован только на компанию Саласа", supportsGuilty = false, weight = 3 },
+            new ArgumentData { argumentId = "arg_6", text = "Салас подал заявление о расторжении за 2 дня до пожара", supportsGuilty = false, weight = 2 },
+            new ArgumentData { argumentId = "arg_7", text = "Гомес звонил Саласу 7 раз за неделю — был информатором", supportsGuilty = false, weight = 2 },
+            new ArgumentData { argumentId = "arg_8", text = "Журнал пропусков ненадёжен после перезагрузки сервера", supportsGuilty = false, weight = 1 },
+            new ArgumentData { argumentId = "arg_9", text = "Холлоуэй платил шантажисту — скрывал прошлое", supportsGuilty = true, weight = 1 },
+            new ArgumentData { argumentId = "arg_10", text = "Бизнес стал прибыльным — нет смысла сжигать", supportsGuilty = false, weight = 2 }
+        };
 
         SaveAsset(s, "suspect_01_holloway");
     }

@@ -126,6 +126,60 @@ public static class Week2AssetCreator
         s.consequenceGuilty = "";
         s.consequenceNotGuilty = "Елена Ривера освобождена. Через три месяца — Дмитрий Орлов обнаружен мёртвым в своей квартире. Причина смерти — почечная недостаточность. Повторная экспертиза тела Андрея Риверы назначена. Дело возобновлено.";
 
+        s.pressureThreshold = 6;
+
+        s.bluffQuestions = new BluffQuestionData[]
+        {
+            new BluffQuestionData
+            {
+                question = "Мы нашли ваши отпечатки на бутылке с антифризом. Объясните.",
+                answerSuccess = "(Замирает.) Я... использовала его для чистки. Это не то, что вы думаете.",
+                answerFail = "(Уверенно.) У меня нет антифриза. Проверьте — я езжу на электромобиле.",
+                requiredChoiceType = ChoiceType.Contact,
+                requiredChoiceId = "contact_victoria",
+                pressureChange = 2
+            },
+            new BluffQuestionData
+            {
+                question = "Ваш новый партнёр Орлов уже дал показания против вас.",
+                answerSuccess = "(Дрожит.) Что он сказал? Он... он обещал молчать!",
+                answerFail = "(Спокойно.) Дмитрий не стал бы такого говорить. Вы блефуете.",
+                requiredChoiceType = ChoiceType.Contact,
+                requiredChoiceId = "contact_orlov",
+                pressureChange = 3
+            }
+        };
+
+        s.contradictions = new ContradictionData[]
+        {
+            new ContradictionData
+            {
+                witnessA = "Коул",
+                witnessB = "Пэйдж",
+                description = "Коул уверен в классическом бытовом отравлении — жена, страховка, новый мужчина. Пэйдж допускает случайное попадание антифриза из гаража."
+            },
+            new ContradictionData
+            {
+                witnessA = "Пэйдж",
+                witnessB = "Нэш",
+                description = "Пэйдж указывает на возможность случайного отравления. Нэш обнаружил что Елена звонила Орлову и сказала 'скоро всё закончится'."
+            }
+        };
+
+        s.arguments = new ArgumentData[]
+        {
+            new ArgumentData { argumentId = "arg_1", text = "Страховка на $800,000 оформлена за 2 месяца до смерти", supportsGuilty = true, weight = 2 },
+            new ArgumentData { argumentId = "arg_2", text = "Этиленгликоль поступал систематически 2-3 недели", supportsGuilty = true, weight = 3 },
+            new ArgumentData { argumentId = "arg_3", text = "Новый партнёр Орлов — мотив для устранения мужа", supportsGuilty = true, weight = 1 },
+            new ArgumentData { argumentId = "arg_4", text = "Антифриз куплен Еленой — камера магазина", supportsGuilty = true, weight = 2 },
+            new ArgumentData { argumentId = "arg_5", text = "Андрей был алкоголиком и поднимал руку", supportsGuilty = false, weight = 1 },
+            new ArgumentData { argumentId = "arg_6", text = "Бутылка антифриза в гараже не вскрывалась", supportsGuilty = true, weight = 2 },
+            new ArgumentData { argumentId = "arg_7", text = "Дочь Виктория заинтересована в наследстве", supportsGuilty = false, weight = 1 },
+            new ArgumentData { argumentId = "arg_8", text = "Елена говорит 'скоро всё закончится' — о разводе", supportsGuilty = false, weight = 1 },
+            new ArgumentData { argumentId = "arg_9", text = "Марина подтверждает — антифриз был для её машины", supportsGuilty = false, weight = 1 },
+            new ArgumentData { argumentId = "arg_10", text = "У Марины нет машины — алиби Елены не совпадает", supportsGuilty = true, weight = 2 }
+        };
+
         SaveAsset(s, "suspect_02_rivera");
     }
 

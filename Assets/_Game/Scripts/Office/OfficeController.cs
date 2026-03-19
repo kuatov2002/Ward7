@@ -84,7 +84,15 @@ public class OfficeController : MonoBehaviour
             case 1: canAdvance = choices.IsChosen(w, ChoiceType.Contact); break;
             case 2: canAdvance = choices.IsChosen(w, ChoiceType.Evidence); break;
             case 3: canAdvance = choices.IsChosen(w, ChoiceType.Testimony); break;
-            case 4: canAdvance = choices.IsChosen(w, ChoiceType.FollowUp); break;
+            case 4:
+                var press = ServiceLocator.Get<PressureService>();
+                bool bluffBlock = press != null && press.BluffFailed;
+                bool pressShutdown = false;
+                var activeCase = ServiceLocator.Get<CaseService>().ActiveCase;
+                if (press != null && activeCase != null)
+                    pressShutdown = press.IsShutdown(activeCase.pressureThreshold);
+                canAdvance = choices.IsChosen(w, ChoiceType.FollowUp) || bluffBlock || pressShutdown;
+                break;
             case 5: return;
         }
 
