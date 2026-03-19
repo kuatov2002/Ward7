@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 public class EvidenceUI : MonoBehaviour, IPanelController
 {
     const string PanelName = "evidence-panel";
+    float _savedScroll;
 
     void Start()
     {
@@ -14,6 +15,8 @@ public class EvidenceUI : MonoBehaviour, IPanelController
     {
         var root = UIManager.Instance.GetRoot();
         var panel = root.Q<VisualElement>(PanelName);
+        var oldScroll = panel.Q<ScrollView>();
+        if (oldScroll != null) _savedScroll = oldScroll.scrollOffset.y;
         panel.Clear();
 
         var cases = ServiceLocator.Get<CaseService>();
@@ -114,6 +117,7 @@ public class EvidenceUI : MonoBehaviour, IPanelController
         }
 
         panel.Add(scroll);
+        scroll.schedule.Execute(() => scroll.scrollOffset = new Vector2(0, _savedScroll));
 
         var noteHint = new Label("Совет: кликните по тексту чтобы сделать заметку для вердикта");
         noteHint.AddToClassList("text-small");

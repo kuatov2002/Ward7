@@ -9,6 +9,7 @@ public class ConnectionBoardUI : MonoBehaviour, IPanelController
     const string PanelName = "connection-panel";
 
     string _selectedCard;
+    float _savedScroll;
     readonly List<string> _foundPairs = new();
     int _attemptsUsed;
 
@@ -31,6 +32,8 @@ public class ConnectionBoardUI : MonoBehaviour, IPanelController
     {
         var root = UIManager.Instance.GetRoot();
         var panel = root.Q<VisualElement>(PanelName);
+        var oldScroll = panel.Q<ScrollView>();
+        if (oldScroll != null) _savedScroll = oldScroll.scrollOffset.y;
         panel.Clear();
 
         var cases = ServiceLocator.Get<CaseService>();
@@ -156,6 +159,7 @@ public class ConnectionBoardUI : MonoBehaviour, IPanelController
             }
 
             panel.Add(scroll);
+            scroll.schedule.Execute(() => scroll.scrollOffset = new Vector2(0, _savedScroll));
         }
     }
 

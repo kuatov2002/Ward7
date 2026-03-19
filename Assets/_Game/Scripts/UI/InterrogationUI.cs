@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 public class InterrogationUI : MonoBehaviour, IPanelController
 {
     const string PanelName = "interrogation-panel";
+    float _savedScroll;
 
     void Start()
     {
@@ -12,8 +13,11 @@ public class InterrogationUI : MonoBehaviour, IPanelController
 
     public void OnShow()
     {
+        // Save scroll position before rebuild
         var root = UIManager.Instance.GetRoot();
         var panel = root.Q<VisualElement>(PanelName);
+        var oldScroll = panel.Q<ScrollView>();
+        if (oldScroll != null) _savedScroll = oldScroll.scrollOffset.y;
         panel.Clear();
 
         var cases = ServiceLocator.Get<CaseService>();
@@ -381,6 +385,9 @@ public class InterrogationUI : MonoBehaviour, IPanelController
         }
 
         panel.Add(scroll);
+
+        // Restore scroll position after rebuild
+        scroll.schedule.Execute(() => scroll.scrollOffset = new Vector2(0, _savedScroll));
     }
 
     void CommitTone(int index, string tone, int pressureChange, SaveService save, PressureService pressure)

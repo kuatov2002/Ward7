@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 public class ContactUI : MonoBehaviour, IPanelController
 {
     const string PanelName = "contact-panel";
+    float _savedScroll;
 
     void Start()
     {
@@ -14,6 +15,8 @@ public class ContactUI : MonoBehaviour, IPanelController
     {
         var root = UIManager.Instance.GetRoot();
         var panel = root.Q<VisualElement>(PanelName);
+        var oldScroll = panel.Q<ScrollView>();
+        if (oldScroll != null) _savedScroll = oldScroll.scrollOffset.y;
         panel.Clear();
 
         var cases = ServiceLocator.Get<CaseService>();
@@ -102,6 +105,7 @@ public class ContactUI : MonoBehaviour, IPanelController
         }
 
         panel.Add(scroll);
+        scroll.schedule.Execute(() => scroll.scrollOffset = new Vector2(0, _savedScroll));
     }
 
     public void OnHide() { }
