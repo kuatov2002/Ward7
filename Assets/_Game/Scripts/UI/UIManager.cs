@@ -15,6 +15,7 @@ public class UIManager : MonoBehaviour
     Label _dayHint;
     Label _interactHint;
     Label _controlsHint;
+    Label _movesCounter;
     VisualElement _transitionOverlay;
     Label _transitionText;
 
@@ -23,6 +24,9 @@ public class UIManager : MonoBehaviour
     bool _initialized;
 
     readonly Dictionary<string, IPanelController> _controllers = new();
+
+    // Frame-based input guard: block pointer events for 1 frame after panel opens
+    int _panelOpenFrame = -1;
 
     void Awake()
     {
@@ -41,21 +45,21 @@ public class UIManager : MonoBehaviour
         if (_root == null) return;
 
         _overlay = _root.Q<VisualElement>("overlay");
-        if (_overlay == null) return; // UXML not loaded yet
+        if (_overlay == null) return;
 
         _crosshair = _root.Q<VisualElement>("crosshair");
         _dayHint = _root.Q<Label>("day-hint");
         _interactHint = _root.Q<Label>("interact-hint");
         _controlsHint = _root.Q<Label>("controls-hint");
+        _movesCounter = _root.Q<Label>("moves-counter");
         _transitionOverlay = _root.Q<VisualElement>("transition-overlay");
         _transitionText = _root.Q<Label>("transition-text");
 
         string[] panelNames = {
-            "main-menu-panel", "outcome-panel", "doccompare-panel", "dossier-panel",
-            "contact-panel", "evidence-inspect-panel", "evidence-panel",
-            "liedetector-panel", "testimony-panel",
-            "interrogation-panel", "connection-panel", "timeline-panel",
-            "briefing-panel", "ending-panel"
+            "main-menu-panel", "case-briefing-panel", "command-center-panel",
+            "interrogation-panel", "location-panel", "database-panel",
+            "confrontation-panel", "deduction-panel", "accusation-panel",
+            "case-result-panel", "ending-panel"
         };
 
         foreach (var n in panelNames)
@@ -94,6 +98,12 @@ public class UIManager : MonoBehaviour
         _overlay.RemoveFromClassList("hidden");
         _panels[panelName].RemoveFromClassList("hidden");
 
+        // Block pointer events for this frame so the click that opened the panel
+        // doesn't also trigger a button inside the panel
+        _panelOpenFrame = Time.frameCount;
+        _overlay.pickingMode = PickingMode.Ignore;
+        _panels[panelName].pickingMode = PickingMode.Ignore;
+
         if (_controllers.ContainsKey(panelName))
             _controllers[panelName].OnShow();
 
@@ -120,12 +130,24 @@ public class UIManager : MonoBehaviour
         SetInteractionLocked(false);
     }
 
-    // Panels that should NOT be closeable by Escape/RMB
     static readonly HashSet<string> _uncloseable = new() {
-        "main-menu-panel", "outcome-panel", "briefing-panel", "ending-panel"
+        "main-menu-panel", "case-briefing-panel", "accusation-panel",
+        "case-result-panel", "ending-panel"
     };
 
     public bool IsPanelOpen => _activePanel != null;
+
+    void LateUpdate()
+    {
+        // Re-enable pointer events one frame after panel was opened
+        if (_panelOpenFrame >= 0 && Time.frameCount > _panelOpenFrame)
+        {
+            _panelOpenFrame = -1;
+            if (_overlay != null) _overlay.pickingMode = PickingMode.Position;
+            if (_activePanel != null && _panels.ContainsKey(_activePanel))
+                _panels[_activePanel].pickingMode = PickingMode.Position;
+        }
+    }
 
     void Update()
     {
@@ -153,16 +175,37 @@ public class UIManager : MonoBehaviour
         StartCoroutine(HideControlsAfter(8f));
     }
 
-    System.Collections.IEnumerator HideControlsAfter(float sec)
+    IEnumerator HideControlsAfter(float sec)
     {
         yield return new WaitForSeconds(sec);
         if (_controlsHint != null)
             _controlsHint.AddToClassList("hidden");
     }
 
-    /// <summary>
-    /// Fade to black, show day text, fade back, then call onComplete.
-    /// </summary>
+    public void UpdateMovesCounter(int moves, int pressurePenalty)
+    {
+        EnsureInit();
+        if (_movesCounter == null) return;
+        string penaltyStr = pressurePenalty > 0 ? $" (-{pressurePenalty})" : "";
+        _movesCounter.text = $"ХОДЫ: {moves}{penaltyStr}";
+        _movesCounter.RemoveFromClassList("hidden");
+
+        // Color based on remaining moves
+        if (moves <= 2)
+            _movesCounter.style.color = new Color(0.9f, 0.2f, 0.2f);
+        else if (moves <= 4)
+            _movesCounter.style.color = new Color(1f, 0.7f, 0f);
+        else
+            _movesCounter.style.color = new Color(1f, 0.7f, 0f);
+    }
+
+    public void HideMovesCounter()
+    {
+        EnsureInit();
+        if (_movesCounter != null)
+            _movesCounter.AddToClassList("hidden");
+    }
+
     public void PlayDayTransition(string text, System.Action onComplete)
     {
         StartCoroutine(DayTransitionRoutine(text, onComplete));
@@ -173,13 +216,12 @@ public class UIManager : MonoBehaviour
         EnsureInit();
         if (_transitionOverlay == null) { onComplete?.Invoke(); yield break; }
 
-        // Fade in (show black)
         _transitionOverlay.RemoveFromClassList("hidden");
         _transitionOverlay.style.opacity = 0f;
         _transitionText.text = "";
 
         float t = 0f;
-        while (t < 0.5f) // fade to black
+        while (t < 0.5f)
         {
             t += Time.deltaTime;
             _transitionOverlay.style.opacity = Mathf.Clamp01(t / 0.5f);
@@ -187,15 +229,12 @@ public class UIManager : MonoBehaviour
         }
         _transitionOverlay.style.opacity = 1f;
 
-        // Show text
         _transitionText.text = text;
         yield return new WaitForSeconds(1.2f);
 
-        // Callback while still black (switch panels etc)
         onComplete?.Invoke();
         yield return new WaitForSeconds(0.3f);
 
-        // Fade out (reveal scene)
         _transitionText.text = "";
         t = 0f;
         while (t < 0.6f)

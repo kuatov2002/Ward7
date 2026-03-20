@@ -4,24 +4,24 @@ using UnityEngine;
 
 public class CaseService
 {
-    List<SuspectSO> _all;
+    List<CaseSO> _all;
 
-    public SuspectSO ActiveCase { get; private set; }
+    public CaseSO ActiveCase { get; private set; }
 
     public void LoadAll()
     {
-        _all = Resources.LoadAll<SuspectSO>("Suspects").ToList();
+        _all = Resources.LoadAll<CaseSO>("Cases").ToList();
     }
 
-    public void LoadWeek(int week)
+    public void LoadCase(int caseNumber)
     {
         if (_all == null) LoadAll();
-        ActiveCase = _all.FirstOrDefault(s => s.weekNumber == week);
+        ActiveCase = _all.FirstOrDefault(c => c.caseNumber == caseNumber);
     }
 
-    public SuspectSO GetCase(int week)
+    public CaseSO GetCase(int caseNumber)
     {
         if (_all == null) LoadAll();
-        return _all.FirstOrDefault(s => s.weekNumber == week);
+        return _all.FirstOrDefault(c => c.caseNumber == caseNumber);
     }
 }

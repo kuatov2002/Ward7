@@ -31,7 +31,6 @@ public class SceneSetup : MonoBehaviour
     static readonly Color PhoneBlack = new(0.05f, 0.05f, 0.05f);
     static readonly Color MonitorGray = new(0.15f, 0.15f, 0.18f);
     static readonly Color ScreenGlow = new(0.06f, 0.12f, 0.08f);
-    static readonly Color CalendarWhite = new(0.75f, 0.72f, 0.65f);
 
     void Awake()
     {
@@ -230,56 +229,32 @@ public class SceneSetup : MonoBehaviour
         var officeCtrl = parent.AddComponent<OfficeController>();
         var objects = new System.Collections.Generic.List<DeskObject>();
 
-        // 1. Dossier folder
-        var dossier = Box("Dossier", new Vector3(-0.8f, 0.78f, 0.7f),
+        // 1. Case folder — opens command center (main investigation hub)
+        var dossier = Box("CaseFolder", new Vector3(-0.8f, 0.78f, 0.7f),
             new Vector3(0.25f, 0.03f, 0.35f), new Color(0.5f, 0.4f, 0.15f));
         dossier.transform.SetParent(parent.transform);
         var dossierObj = dossier.AddComponent<DeskObject>();
-        dossierObj.panelName = "dossier-panel";
-        dossierObj.displayName = "Досье";
-        dossierObj.visibleOnDay = 1;
-        dossierObj.visibleFromDayOnward = true;
+        dossierObj.panelName = "command-center-panel";
+        dossierObj.displayName = "Папка дела";
+        var dossierAnim = dossier.AddComponent<DeskObjectAnimator>();
+        dossierAnim.animType = DeskObjectAnimator.AnimationType.GlowPulse;
         objects.Add(dossierObj);
 
-        // 2. Phone
+        // 2. Phone — opens database queries
         var phoneBase = Cyl("Phone", new Vector3(-0.45f, 0.76f, 0.4f), new Vector3(0.15f, 0.02f, 0.15f), PhoneBlack);
         var phoneHandset = Box("PhoneHandset", new Vector3(-0.45f, 0.8f, 0.4f), new Vector3(0.04f, 0.02f, 0.18f), PhoneBlack);
         phoneHandset.transform.SetParent(phoneBase.transform);
         phoneBase.transform.SetParent(parent.transform);
         var phoneObj = phoneBase.AddComponent<DeskObject>();
-        phoneObj.panelName = "contact-panel";
-        phoneObj.displayName = "Телефон — Контакты";
-        phoneObj.visibleOnDay = 1;
+        phoneObj.panelName = "database-panel";
+        phoneObj.displayName = "Телефон — База данных";
         var phoneAnim = phoneBase.AddComponent<DeskObjectAnimator>();
         phoneAnim.animType = DeskObjectAnimator.AnimationType.PhoneVibrate;
         objects.Add(phoneObj);
 
-        // 3. Evidence folders
-        var evidenceParent = new GameObject("EvidenceFolders");
-        evidenceParent.transform.position = new Vector3(-0.15f, 0.78f, 0.8f);
-        evidenceParent.transform.SetParent(parent.transform);
-        Color[] evColors = { new(0.4f, 0.3f, 0.15f), new(0.45f, 0.32f, 0.18f), new(0.5f, 0.35f, 0.2f) };
-        for (int i = 0; i < 3; i++)
-        {
-            var folder = Box($"EvidenceFolder_{i}", new Vector3(0f, i * 0.025f, 0f),
-                new Vector3(0.2f, 0.02f, 0.28f), evColors[i]);
-            folder.transform.SetParent(evidenceParent.transform, false);
-        }
-        var evBox = evidenceParent.AddComponent<BoxCollider>();
-        evBox.size = new Vector3(0.2f, 0.08f, 0.28f);
-        evBox.center = new Vector3(0f, 0.03f, 0f);
-        var evObj = evidenceParent.AddComponent<DeskObject>();
-        evObj.panelName = "evidence-panel";
-        evObj.displayName = "Папки с уликами";
-        evObj.visibleOnDay = 2;
-        var evAnim = evidenceParent.AddComponent<DeskObjectAnimator>();
-        evAnim.animType = DeskObjectAnimator.AnimationType.GlowPulse;
-        objects.Add(evObj);
-
-        // 4. Computer monitor
+        // 3. Computer monitor — opens command center (alternate access)
         var monitorScreen = Box("Monitor", new Vector3(0.35f, 0.98f, 1.0f),
             new Vector3(0.5f, 0.32f, 0.03f), MonitorGray);
-        // Stand and neck as children so raycast on them finds the DeskObject
         var mStand = Cyl("MonitorStand", new Vector3(0.35f, 0.77f, 1.0f), new Vector3(0.06f, 0.03f, 0.06f), Metal);
         mStand.transform.SetParent(monitorScreen.transform);
         var mNeck = Box("MonitorNeck", new Vector3(0.35f, 0.82f, 1.0f), new Vector3(0.03f, 0.06f, 0.03f), Metal);
@@ -288,66 +263,29 @@ public class SceneSetup : MonoBehaviour
         mGlow.transform.SetParent(monitorScreen.transform);
         monitorScreen.transform.SetParent(parent.transform);
         var monObj = monitorScreen.AddComponent<DeskObject>();
-        monObj.panelName = "testimony-panel";
-        monObj.displayName = "Компьютер — Показания";
-        monObj.visibleOnDay = 3;
+        monObj.panelName = "command-center-panel";
+        monObj.displayName = "Монитор — Командный центр";
         objects.Add(monObj);
 
-        // 5. Interrogation notepad
-        var notepad = Box("Notepad", new Vector3(0.5f, 0.77f, 0.5f),
-            new Vector3(0.18f, 0.015f, 0.24f), Paper);
-        notepad.transform.SetParent(parent.transform);
-        var noteObj = notepad.AddComponent<DeskObject>();
-        noteObj.panelName = "interrogation-panel";
-        noteObj.displayName = "Протокол допроса";
-        noteObj.visibleOnDay = 4;
-        objects.Add(noteObj);
-
-        // 6. Verdict stamp
+        // 4. Verdict stamp — opens accusation panel
         var stamp = Cyl("Stamp", new Vector3(0.75f, 0.78f, 0.6f),
             new Vector3(0.08f, 0.04f, 0.08f), RedDark);
         stamp.transform.SetParent(parent.transform);
         var stampObj = stamp.AddComponent<DeskObject>();
-        stampObj.panelName = "briefing-panel";
-        stampObj.displayName = "Печать — Вердикт";
-        stampObj.visibleOnDay = 5;
+        stampObj.panelName = "accusation-panel";
+        stampObj.displayName = "Печать — Обвинение";
         var stampAnim = stamp.AddComponent<DeskObjectAnimator>();
         stampAnim.animType = DeskObjectAnimator.AnimationType.StampReady;
         objects.Add(stampObj);
 
-        // 7. Calendar
-        var calendar = Box("Calendar", new Vector3(0.9f, 0.82f, 0.85f),
-            new Vector3(0.12f, 0.16f, 0.02f), CalendarWhite);
-        calendar.transform.rotation = Quaternion.Euler(-10f, 0f, 0f);
-        calendar.transform.SetParent(parent.transform);
-        var calObj = calendar.AddComponent<DeskObject>();
-        calObj.isCalendar = true;
-        calObj.displayName = "Календарь — Следующий день";
-        calObj.visibleOnDay = -1;
-        objects.Add(calObj);
-
-        // 8. Connection board (the evidence board on wall — always available)
-        // We make the existing board clickable
+        // 5. Deduction board on wall
         var boardTrigger = Box("BoardTrigger", new Vector3(-1.8f, 1.5f, 2.43f),
             new Vector3(1.2f, 0.8f, 0.04f), new Color(0.55f, 0.4f, 0.2f));
         boardTrigger.transform.SetParent(parent.transform);
         var boardObj = boardTrigger.AddComponent<DeskObject>();
-        boardObj.panelName = "connection-panel";
-        boardObj.displayName = "Доска связей";
-        boardObj.visibleOnDay = 1;
-        boardObj.visibleFromDayOnward = true;
+        boardObj.panelName = "deduction-panel";
+        boardObj.displayName = "Доска дедукции";
         objects.Add(boardObj);
-
-        // 9. Timeline clipboard (on desk, available from Thursday onward)
-        var timeline = Box("Timeline", new Vector3(0.3f, 0.775f, 0.35f),
-            new Vector3(0.22f, 0.01f, 0.16f), new Color(0.6f, 0.55f, 0.4f));
-        timeline.transform.SetParent(parent.transform);
-        var tlObj = timeline.AddComponent<DeskObject>();
-        tlObj.panelName = "timeline-panel";
-        tlObj.displayName = "Хронология событий";
-        tlObj.visibleOnDay = 4;
-        tlObj.visibleFromDayOnward = true;
-        objects.Add(tlObj);
 
         officeCtrl.deskObjects = objects.ToArray();
     }
@@ -364,18 +302,15 @@ public class SceneSetup : MonoBehaviour
 
         uiGo.AddComponent<UIManager>();
         uiGo.AddComponent<MainMenuUI>();
-        uiGo.AddComponent<OutcomeUI>();
-        uiGo.AddComponent<DossierUI>();
-        uiGo.AddComponent<ContactUI>();
-        uiGo.AddComponent<EvidenceUI>();
-        uiGo.AddComponent<TestimonyUI>();
+        uiGo.AddComponent<CaseBriefingUI>();
+        uiGo.AddComponent<CommandCenterUI>();
         uiGo.AddComponent<InterrogationUI>();
-        uiGo.AddComponent<DocumentCompareUI>();
-        uiGo.AddComponent<EvidenceInspectUI>();
-        uiGo.AddComponent<LieDetectorUI>();
-        uiGo.AddComponent<ConnectionBoardUI>();
-        uiGo.AddComponent<TimelineUI>();
-        uiGo.AddComponent<BriefingUI>();
+        uiGo.AddComponent<LocationInspectUI>();
+        uiGo.AddComponent<DatabaseUI>();
+        uiGo.AddComponent<ConfrontationUI>();
+        uiGo.AddComponent<DeductionBoardUI>();
+        uiGo.AddComponent<AccusationUI>();
+        uiGo.AddComponent<CaseResultUI>();
         uiGo.AddComponent<EndingUI>();
     }
 

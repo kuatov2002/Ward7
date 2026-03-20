@@ -12,29 +12,37 @@ public class ConsequenceService
         _queue = save.Data.pending;
     }
 
-    public void Schedule(string suspectId, VerdictType verdict, int currentWeek, SuspectSO suspect)
+    public void Schedule(CaseSO caseSO, CaseResult result, int currentCase)
     {
-        string headline = verdict == VerdictType.Guilty
-            ? suspect.consequenceGuilty
-            : suspect.consequenceNotGuilty;
+        CaseConsequenceData data = result switch
+        {
+            CaseResult.CorrectArrest => caseSO.consequenceCorrectArrest,
+            CaseResult.WrongArrest => caseSO.consequenceWrongArrest,
+            CaseResult.Unsolved => caseSO.consequenceUnsolved,
+            CaseResult.WeakCase => caseSO.consequenceWeakCase,
+            _ => null
+        };
 
-        if (string.IsNullOrEmpty(headline))
+        if (data == null || string.IsNullOrEmpty(data.headlineText))
             return;
 
         _queue.Add(new ScheduledConsequence
         {
-            suspectId = suspectId,
-            headlineText = headline,
-            triggerWeek = currentWeek + 1
+            caseId = caseSO.caseId,
+            headlineText = data.headlineText,
+            detailText = data.detailText,
+            triggerCase = currentCase + 1
         });
         _save.Save();
     }
 
-    public List<string> ResolveWeek(int week)
+    public List<ScheduledConsequence> ResolveForCase(int caseNumber)
     {
-        var due = _queue.Where(c => c.triggerWeek == week).ToList();
-        _queue.RemoveAll(c => c.triggerWeek == week);
+        var due = _queue.Where(c => c.triggerCase == caseNumber).ToList();
+        _queue.RemoveAll(c => c.triggerCase == caseNumber);
         _save.Save();
-        return due.Select(c => c.headlineText).ToList();
+        return due;
     }
+
+    public List<string> GetEscapedCriminals() => _save.Data.escapedCriminals;
 }

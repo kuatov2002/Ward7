@@ -1,10 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
-/// <summary>
-/// Cork board on the wall that shows cards for player's choices.
-/// Cards appear as colored cubes with text meshes.
-/// </summary>
 public class EvidenceBoard : MonoBehaviour
 {
     public static EvidenceBoard Instance { get; private set; }
@@ -13,7 +10,6 @@ public class EvidenceBoard : MonoBehaviour
     Material _baseMat;
     readonly List<GameObject> _cards = new();
 
-    // Board dimensions
     const float BoardX = -1.8f;
     const float BoardY = 1.5f;
     const float BoardZ = 2.44f;
@@ -34,9 +30,7 @@ public class EvidenceBoard : MonoBehaviour
         _boardGo.name = "EvidenceBoard";
         _boardGo.transform.position = new Vector3(BoardX, BoardY, BoardZ);
         _boardGo.transform.localScale = new Vector3(BoardW, BoardH, 0.03f);
-        SetMat(_boardGo, new Color(0.6f, 0.45f, 0.25f)); // cork color
-
-        // Frame pieces
+        SetMat(_boardGo, new Color(0.6f, 0.45f, 0.25f));
         CreateFrame();
     }
 
@@ -85,12 +79,10 @@ public class EvidenceBoard : MonoBehaviour
         card.name = $"Card_{idx}";
         card.transform.position = new Vector3(x, y, BoardZ - 0.025f);
         card.transform.localScale = new Vector3(cardW, cardH, 0.005f);
-        // Slight random rotation for realism
         card.transform.rotation = Quaternion.Euler(0f, 0f, Random.Range(-3f, 3f));
         SetMat(card, cardColor);
         card.transform.SetParent(_boardGo.transform);
 
-        // Pin on top
         var pin = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         pin.name = "Pin";
         pin.transform.position = new Vector3(x, y + cardH * 0.35f, BoardZ - 0.035f);
@@ -108,36 +100,37 @@ public class EvidenceBoard : MonoBehaviour
         _cards.Clear();
     }
 
-    public void RefreshFromChoices()
+    /// <summary>
+    /// Refresh board from revealed deduction fragments.
+    /// Colors by fragment type: red=motive, blue=opportunity, yellow=evidence, purple=suspect.
+    /// </summary>
+    public void RefreshFromFragments()
     {
         ClearCards();
-        var choices = ServiceLocator.Get<DailyChoiceService>();
-        var state = ServiceLocator.Get<GameStateService>();
+
+        var deduction = ServiceLocator.Get<DeductionService>();
         var cases = ServiceLocator.Get<CaseService>();
-        int w = state.CurrentWeek;
+        if (deduction == null || cases == null) return;
 
-        string contactSel = choices.GetSelected(w, ChoiceType.Contact);
-        if (!string.IsNullOrEmpty(contactSel))
-            AddCard(contactSel, new Color(0.3f, 0.5f, 0.7f)); // blue
+        var c = cases.ActiveCase;
+        if (c == null || c.fragments == null) return;
 
-        string evidenceSel = choices.GetSelected(w, ChoiceType.Evidence);
-        if (!string.IsNullOrEmpty(evidenceSel))
-            AddCard(evidenceSel, new Color(0.7f, 0.5f, 0.3f)); // orange
+        var revealed = deduction.GetRevealedFragments();
 
-        string testimonySel = choices.GetSelected(w, ChoiceType.Testimony);
-        if (!string.IsNullOrEmpty(testimonySel))
-            AddCard(testimonySel, new Color(0.5f, 0.7f, 0.4f)); // green
-
-        string followUpSel = choices.GetSelected(w, ChoiceType.FollowUp);
-        if (!string.IsNullOrEmpty(followUpSel))
-            AddCard(followUpSel, new Color(0.7f, 0.4f, 0.5f)); // pink
-
-        // Player notes as small yellow cards
-        var notesSvc = ServiceLocator.Get<NoteService>();
-        if (notesSvc != null)
+        foreach (var frag in c.fragments)
         {
-            foreach (var note in notesSvc.GetNotes(w))
-                AddCard(note.text, new Color(0.8f, 0.75f, 0.3f)); // yellow
+            if (!revealed.Contains(frag.fragmentId)) continue;
+
+            Color cardColor = frag.fragmentType switch
+            {
+                FragmentType.Motive => new Color(0.7f, 0.3f, 0.3f),
+                FragmentType.Opportunity => new Color(0.3f, 0.5f, 0.7f),
+                FragmentType.Evidence => new Color(0.7f, 0.6f, 0.2f),
+                FragmentType.Suspect => new Color(0.6f, 0.3f, 0.7f),
+                _ => new Color(0.5f, 0.5f, 0.5f)
+            };
+
+            AddCard(frag.displayText, cardColor);
         }
     }
 

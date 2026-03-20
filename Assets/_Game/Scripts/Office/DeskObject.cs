@@ -8,15 +8,6 @@ public class DeskObject : MonoBehaviour
     [Tooltip("Player-facing name shown in interact hint")]
     public string displayName;
 
-    [Tooltip("-1 = always visible, 0 = outcome, 1 = monday, etc.")]
-    public int visibleOnDay = -1;
-
-    [Tooltip("If true, object is always visible when day >= visibleOnDay")]
-    public bool visibleFromDayOnward;
-
-    [Tooltip("For calendar: requires current day's choice to be made")]
-    public bool isCalendar;
-
     Renderer _renderer;
     Renderer[] _allRenderers;
     Color _baseColor;
@@ -79,34 +70,29 @@ public class DeskObject : MonoBehaviour
         gameObject.SetActive(visible);
     }
 
-    public bool ShouldBeVisible(int currentDay)
-    {
-        if (visibleOnDay < 0) return true;
-        if (visibleFromDayOnward) return currentDay >= visibleOnDay;
-        return currentDay == visibleOnDay;
-    }
+    // Panels that require context data set before opening — redirect to command center
+    static readonly System.Collections.Generic.HashSet<string> _contextPanels = new() {
+        "database-panel", "interrogation-panel", "location-panel",
+        "confrontation-panel", "accusation-panel"
+    };
 
     public void Interact()
     {
         var audio = ProceduralAudio.Instance;
 
-        if (isCalendar)
-        {
-            if (audio != null) audio.PlayPaperFlip();
-            OfficeController.Instance.TryAdvanceDay();
-            return;
-        }
-
         if (!string.IsNullOrEmpty(panelName))
         {
-            // Play contextual sound
             if (audio != null)
             {
-                if (panelName.Contains("contact")) audio.PlayPhoneRing();
-                else if (panelName.Contains("briefing")) audio.PlayStamp();
+                if (panelName.Contains("database")) audio.PlayPhoneRing();
                 else audio.PlayPaperFlip();
             }
-            OfficeController.Instance.OpenPanel(panelName);
+
+            // Context-dependent panels must go through the command center
+            string target = _contextPanels.Contains(panelName)
+                ? "command-center-panel"
+                : panelName;
+            OfficeController.Instance.OpenPanel(target);
         }
     }
 }

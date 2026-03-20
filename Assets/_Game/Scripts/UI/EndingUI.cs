@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -26,24 +27,33 @@ public class EndingUI : MonoBehaviour, IPanelController
         panel.Add(Spacer(20));
 
         // Career summary
-        int totalCases = save.Data.verdicts.Count;
-        int correctCount = 0;
-        foreach (var v in save.Data.verdicts)
-        {
-            var sus = cases.GetCase(v.week);
-            if (sus != null && ((v.verdict == VerdictType.Guilty && sus.isGuilty) ||
-                (v.verdict == VerdictType.NotGuilty && !sus.isGuilty)))
-                correctCount++;
-        }
-        var summary = new Label($"Дел расследовано: {totalCases}  |  Верных вердиктов: {correctCount}/{totalCases}");
-        summary.AddToClassList("text");
-        summary.AddToClassList(correctCount == totalCases ? "text-green" : "text-amber");
-        summary.style.unityTextAlign = TextAnchor.MiddleCenter;
-        summary.style.fontSize = 18;
+        int totalCases = save.Data.caseResults.Count;
+        int correct = save.Data.caseResults.Count(r => r.result == CaseResult.CorrectArrest);
+        int wrong = save.Data.caseResults.Count(r => r.result == CaseResult.WrongArrest);
+        int unsolved = save.Data.caseResults.Count(r => r.result == CaseResult.Unsolved);
+        int weak = save.Data.caseResults.Count(r => r.result == CaseResult.WeakCase);
+        int escaped = save.Data.escapedCriminals.Count;
+
+        var summary = new Label($"Дел расследовано: {totalCases}");
+        summary.AddToClassList("header-center");
         panel.Add(summary);
+
+        panel.Add(Spacer(10));
+
+        var statsBox = new VisualElement();
+        statsBox.AddToClassList("box");
+
+        AddStatRow(statsBox, "Правильных арестов:", correct, "text-green");
+        AddStatRow(statsBox, "Ошибочных арестов:", wrong, "text-red");
+        AddStatRow(statsBox, "Нераскрытых дел:", unsolved, "text-gray");
+        AddStatRow(statsBox, "Слабых обвинений:", weak, "text-yellow");
+        AddStatRow(statsBox, "Преступников на свободе:", escaped, "text-red");
+
+        panel.Add(statsBox);
 
         panel.Add(Spacer(15));
 
+        // Per-case breakdown
         var sub = new Label("Подробности расследований:");
         sub.AddToClassList("header");
         panel.Add(sub);
@@ -51,57 +61,65 @@ public class EndingUI : MonoBehaviour, IPanelController
         panel.Add(Spacer());
 
         var scroll = new ScrollView(ScrollViewMode.Vertical);
-        scroll.style.maxHeight = 500;
         scroll.style.flexGrow = 1;
+        scroll.style.flexShrink = 1;
 
-        foreach (var v in save.Data.verdicts)
+        foreach (var r in save.Data.caseResults)
         {
-            var suspect = cases.GetCase(v.week);
-            string name = suspect != null ? suspect.displayName : v.suspectId;
-            string vStr = v.verdict == VerdictType.Guilty ? "ВИНОВЕН" : "НЕ ВИНОВЕН";
-            bool correct = suspect != null &&
-                ((v.verdict == VerdictType.Guilty && suspect.isGuilty) ||
-                 (v.verdict == VerdictType.NotGuilty && !suspect.isGuilty));
+            var caseData = cases.GetCase(r.caseNumber);
+            string name = caseData != null ? caseData.displayName : r.caseId;
 
             var box = new VisualElement();
             box.AddToClassList("box");
 
-            var weekLabel = new Label($"Неделя {v.week}: {name}");
-            weekLabel.AddToClassList("text-bold");
-            box.Add(weekLabel);
-
-            string truthStr = suspect != null
-                ? (suspect.isGuilty ? "ВИНОВЕН" : "НЕ ВИНОВЕН")
-                : "???";
-            var verdictLabel = new Label($"Ваш вердикт: {vStr}");
-            verdictLabel.AddToClassList("text");
-            verdictLabel.AddToClassList(correct ? "text-green" : "text-red");
-            box.Add(verdictLabel);
-
-            var truthLabel = new Label($"Истина: {truthStr}  {(correct ? "\u2714 ВЕРНО" : "\u2718 ОШИБКА")}");
-            truthLabel.AddToClassList("text-bold");
-            truthLabel.AddToClassList(correct ? "text-green" : "text-red");
-            box.Add(truthLabel);
-
-            if (v.justificationScore > 0)
+            string resultClass = r.result switch
             {
-                var scoreLabel = new Label($"Обоснование: {v.justificationScore} баллов");
-                scoreLabel.AddToClassList("text");
-                scoreLabel.AddToClassList("text-yellow");
-                box.Add(scoreLabel);
-            }
+                CaseResult.CorrectArrest => "result-correct",
+                CaseResult.WrongArrest => "result-wrong",
+                CaseResult.Unsolved => "result-unsolved",
+                CaseResult.WeakCase => "result-weak",
+                _ => ""
+            };
+            box.AddToClassList(resultClass);
 
-            if (suspect != null)
+            var caseLabel = new Label($"Дело #{r.caseNumber}: {name}");
+            caseLabel.AddToClassList("text-bold");
+            box.Add(caseLabel);
+
+            string resultStr = r.result switch
             {
-                string c = v.verdict == VerdictType.Guilty
-                    ? suspect.consequenceGuilty
-                    : suspect.consequenceNotGuilty;
-                if (!string.IsNullOrEmpty(c))
+                CaseResult.CorrectArrest => "ПРАВИЛЬНЫЙ АРЕСТ",
+                CaseResult.WrongArrest => "ОШИБОЧНЫЙ АРЕСТ",
+                CaseResult.Unsolved => "НЕРАСКРЫТО",
+                CaseResult.WeakCase => "СЛАБОЕ ОБВИНЕНИЕ",
+                _ => "???"
+            };
+
+            var resultLabel = new Label(resultStr);
+            resultLabel.AddToClassList("text-bold");
+            resultLabel.AddToClassList(r.result == CaseResult.CorrectArrest ? "text-green" : "text-red");
+            box.Add(resultLabel);
+
+            if (!string.IsNullOrEmpty(r.accusedPersonId) && caseData != null)
+            {
+                var person = caseData.persons?.FirstOrDefault(p => p.personId == r.accusedPersonId);
+                if (person != null)
                 {
-                    box.Add(Spacer(3));
-                    var consq = new Label(c);
-                    consq.AddToClassList("text");
-                    box.Add(consq);
+                    var accusedLabel = new Label($"Обвинён: {person.displayName}");
+                    accusedLabel.AddToClassList("text");
+                    box.Add(accusedLabel);
+                }
+
+                if (r.result == CaseResult.WrongArrest && !string.IsNullOrEmpty(caseData.trueCulpritId))
+                {
+                    var truePerson = caseData.persons?.FirstOrDefault(p => p.personId == caseData.trueCulpritId);
+                    if (truePerson != null)
+                    {
+                        var trueLabel = new Label($"Настоящий виновный: {truePerson.displayName}");
+                        trueLabel.AddToClassList("text");
+                        trueLabel.AddToClassList("text-red");
+                        box.Add(trueLabel);
+                    }
                 }
             }
 
@@ -112,6 +130,33 @@ public class EndingUI : MonoBehaviour, IPanelController
 
         panel.Add(Spacer(20));
 
+        // Career rating
+        float ratio = totalCases > 0 ? (float)correct / totalCases : 0;
+        string rating;
+        string ratingClass;
+        if (ratio >= 0.8f)
+        {
+            rating = "ВЫДАЮЩИЙСЯ СЛЕДОВАТЕЛЬ";
+            ratingClass = "text-green";
+        }
+        else if (ratio >= 0.5f)
+        {
+            rating = "КОМПЕТЕНТНЫЙ ДЕТЕКТИВ";
+            ratingClass = "text-yellow";
+        }
+        else
+        {
+            rating = "ПРОВАЛ КАРЬЕРЫ";
+            ratingClass = "text-red";
+        }
+
+        var ratingLabel = new Label(rating);
+        ratingLabel.AddToClassList("title");
+        ratingLabel.AddToClassList(ratingClass);
+        panel.Add(ratingLabel);
+
+        panel.Add(Spacer(20));
+
         var menuBtn = new Button(() => {
             UIManager.Instance.HideAllPanels();
             UIManager.Instance.ShowPanel("main-menu-panel");
@@ -119,6 +164,25 @@ public class EndingUI : MonoBehaviour, IPanelController
         menuBtn.text = "ГЛАВНОЕ МЕНЮ";
         menuBtn.AddToClassList("btn-wide");
         panel.Add(menuBtn);
+    }
+
+    void AddStatRow(VisualElement parent, string label, int value, string valueClass)
+    {
+        var row = new VisualElement();
+        row.AddToClassList("row");
+        row.style.marginBottom = 2;
+
+        var labelEl = new Label(label);
+        labelEl.AddToClassList("text");
+        labelEl.style.width = 200;
+        row.Add(labelEl);
+
+        var valueEl = new Label(value.ToString());
+        valueEl.AddToClassList("text-bold");
+        valueEl.AddToClassList(valueClass);
+        row.Add(valueEl);
+
+        parent.Add(row);
     }
 
     public void OnHide() { }

@@ -52,7 +52,7 @@ public class RaycastInteraction : MonoBehaviour
             }
         }
 
-        if (_current != null && (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)))
+        if (_current != null && (Input.GetMouseButtonUp(0) || Input.GetKeyDown(KeyCode.E)))
             _current.Interact();
     }
 }

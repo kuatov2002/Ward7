@@ -20,7 +20,7 @@ public class MainMenuUI : MonoBehaviour, IPanelController
         title.AddToClassList("title");
         panel.Add(title);
 
-        var sub = new Label("Детективная драма");
+        var sub = new Label("Детективная головоломка");
         sub.AddToClassList("text");
         sub.style.unityTextAlign = TextAnchor.MiddleCenter;
         sub.style.marginBottom = 40;
@@ -31,9 +31,7 @@ public class MainMenuUI : MonoBehaviour, IPanelController
 
         var btnNew = new Button(() => {
             GameManager.Instance.StartNewGame();
-            UIManager.Instance.HideAllPanels();
-            OfficeController.Instance.OnGameStarted();
-            OfficeController.Instance.HandleDayStart();
+            UIManager.Instance.ShowPanel("case-briefing-panel");
         });
         btnNew.text = "НОВАЯ ИГРА";
         btnNew.AddToClassList("btn-wide");
@@ -44,7 +42,6 @@ public class MainMenuUI : MonoBehaviour, IPanelController
             GameManager.Instance.ContinueGame();
             UIManager.Instance.HideAllPanels();
             OfficeController.Instance.OnGameStarted();
-            OfficeController.Instance.HandleDayStart();
         });
         btnCont.text = "ПРОДОЛЖИТЬ";
         btnCont.AddToClassList("btn-wide");

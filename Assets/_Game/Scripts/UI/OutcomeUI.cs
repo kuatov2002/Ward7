@@ -3,9 +3,9 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class OutcomeUI : MonoBehaviour, IPanelController
+public class CaseBriefingUI : MonoBehaviour, IPanelController
 {
-    const string PanelName = "outcome-panel";
+    const string PanelName = "case-briefing-panel";
 
     void Start()
     {
@@ -22,57 +22,68 @@ public class OutcomeUI : MonoBehaviour, IPanelController
         var conseq = ServiceLocator.Get<ConsequenceService>();
         var cases = ServiceLocator.Get<CaseService>();
 
-        var title = new Label($"НЕДЕЛЯ {state.CurrentWeek} — ПОНЕДЕЛЬНИК");
+        var title = new Label($"ДЕЛО #{state.CurrentCase}");
         title.AddToClassList("title");
         panel.Add(title);
 
         panel.Add(Spacer());
 
-        List<string> headlines = conseq.ResolveWeek(state.CurrentWeek)
-            .Where(h => !string.IsNullOrEmpty(h)).ToList();
-
-        if (state.CurrentWeek == 1 && headlines.Count == 0)
+        // Show consequences from previous case
+        var consequences = conseq.ResolveForCase(state.CurrentCase);
+        if (consequences.Count > 0)
         {
-            var intro = new Label("На ваш стол легло новое дело.");
-            intro.AddToClassList("header-center");
-            panel.Add(intro);
-        }
-        else if (headlines.Count == 0)
-        {
-            var noNews = new Label("— Новых последствий нет —");
-            noNews.AddToClassList("header-center");
-            panel.Add(noNews);
-        }
-        else
-        {
-            var hdr = new Label("ПОСЛЕДСТВИЯ ВАШИХ РЕШЕНИЙ:");
+            var hdr = new Label("ПОСЛЕДСТВИЯ ПРЕДЫДУЩЕГО ДЕЛА:");
             hdr.AddToClassList("header");
             panel.Add(hdr);
 
-            var consExplain = new Label("Ваши вердикты предыдущих недель привели к этим событиям:");
-            consExplain.AddToClassList("text-small");
-            consExplain.AddToClassList("text-dim");
-            panel.Add(consExplain);
+            panel.Add(Spacer(5));
 
-            panel.Add(Spacer(10));
-
-            foreach (var h in headlines)
+            foreach (var c in consequences)
             {
                 var box = new VisualElement();
                 box.AddToClassList("box");
-                var lbl = new Label(h);
+                var lbl = new Label(c.headlineText);
                 lbl.AddToClassList("text");
                 box.Add(lbl);
+                if (!string.IsNullOrEmpty(c.detailText))
+                {
+                    var detail = new Label(c.detailText);
+                    detail.AddToClassList("text-small");
+                    box.Add(detail);
+                }
                 panel.Add(box);
             }
+
+            panel.Add(Spacer(10));
         }
 
+        // Show escaped criminals warning
+        var escaped = conseq.GetEscapedCriminals();
+        if (escaped.Count > 0)
+        {
+            var escLabel = new Label($"Преступников на свободе: {escaped.Count}");
+            escLabel.AddToClassList("text-bold");
+            escLabel.AddToClassList("text-red");
+            escLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+            panel.Add(escLabel);
+            panel.Add(Spacer(5));
+        }
+
+        // Press penalty warning
+        if (state.PressPenalty > 0)
+        {
+            var pressLabel = new Label($"Давление прессы: -{state.PressPenalty} ходов к бюджету");
+            pressLabel.AddToClassList("text-bold");
+            pressLabel.AddToClassList("text-red");
+            pressLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+            panel.Add(pressLabel);
+            panel.Add(Spacer(10));
+        }
+
+        // New case intro
         var suspect = cases.ActiveCase;
         if (suspect != null)
         {
-            panel.Add(Spacer(20));
-
-            // Dramatic case intro card
             var caseCard = new VisualElement();
             caseCard.AddToClassList("box");
             caseCard.style.borderLeftWidth = 4;
@@ -93,34 +104,49 @@ public class OutcomeUI : MonoBehaviour, IPanelController
             caseName.style.marginBottom = 4;
             caseCard.Add(caseName);
 
-            // First sentence of dossier as "accusation"
-            string accusation = "";
-            if (!string.IsNullOrEmpty(suspect.dossierText))
+            if (!string.IsNullOrEmpty(suspect.briefingText))
             {
-                int dotIdx = suspect.dossierText.IndexOf('.');
-                if (dotIdx > 0) accusation = suspect.dossierText.Substring(0, dotIdx + 1);
-                else accusation = suspect.dossierText.Length > 100
-                    ? suspect.dossierText.Substring(0, 100) + "..."
-                    : suspect.dossierText;
+                var briefing = new Label(suspect.briefingText);
+                briefing.AddToClassList("text");
+                caseCard.Add(briefing);
             }
-            if (!string.IsNullOrEmpty(accusation))
+
+            // List suspects
+            if (suspect.persons != null && suspect.persons.Length > 0)
             {
-                var accLabel = new Label(accusation);
-                accLabel.AddToClassList("text");
-                accLabel.style.unityFontStyleAndWeight = FontStyle.Italic;
-                caseCard.Add(accLabel);
+                caseCard.Add(Spacer(8));
+                var personsLabel = new Label("ФИГУРАНТЫ:");
+                personsLabel.AddToClassList("text-bold");
+                personsLabel.AddToClassList("text-amber");
+                caseCard.Add(personsLabel);
+
+                foreach (var p in suspect.persons)
+                {
+                    string roleStr = p.role == PersonRole.Suspect ? "подозреваемый" : "свидетель";
+                    var personLabel = new Label($"\u2022 {p.displayName} ({roleStr})");
+                    personLabel.AddToClassList("text");
+                    caseCard.Add(personLabel);
+                }
             }
+
+            // Budget info
+            caseCard.Add(Spacer(8));
+            int effectiveMoves = suspect.totalMoves - state.PressPenalty;
+            if (effectiveMoves < 3) effectiveMoves = 3;
+            var budgetLabel = new Label($"Бюджет расследования: {effectiveMoves} ходов");
+            budgetLabel.AddToClassList("text-bold");
+            budgetLabel.AddToClassList("text-cyan");
+            caseCard.Add(budgetLabel);
 
             panel.Add(caseCard);
         }
 
-        panel.Add(Spacer(30));
+        panel.Add(Spacer(20));
 
         var btn = new Button(() => {
-            UIManager.Instance.PlayDayTransition("Понедельник", () => {
-                state.AdvanceDay();
+            UIManager.Instance.PlayDayTransition("РАССЛЕДОВАНИЕ", () => {
                 UIManager.Instance.HideAllPanels();
-                OfficeController.Instance.RefreshDesk();
+                OfficeController.Instance.OnGameStarted();
             });
         });
         btn.text = "НАЧАТЬ РАССЛЕДОВАНИЕ";

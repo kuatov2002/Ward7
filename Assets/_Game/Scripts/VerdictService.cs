@@ -1,38 +1,46 @@
 public class VerdictService
 {
-    VerdictType _pending = VerdictType.None;
     readonly ConsequenceService _consequences;
     readonly SaveService _save;
+    readonly GameStateService _state;
 
-    public VerdictService(ConsequenceService consequences, SaveService save)
+    public VerdictService(ConsequenceService consequences, SaveService save, GameStateService state)
     {
         _consequences = consequences;
         _save = save;
+        _state = state;
     }
 
-    public void SetVerdict(VerdictType verdict) => _pending = verdict;
-    public VerdictType GetVerdict() => _pending;
-
-    public void CommitAll(string suspectId, int currentWeek, SuspectSO suspect, int justificationScore = 0)
+    public void CommitAccusation(CaseSO caseSO, CaseResult result, string accusedPersonId)
     {
-        if (_pending == VerdictType.None)
-            return;
+        _consequences.Schedule(caseSO, result, _state.CurrentCase);
 
-        _consequences.Schedule(suspectId, _pending, currentWeek, suspect);
-
-        _save.Data.verdicts.Add(new VerdictRecord
+        _save.Data.caseResults.Add(new CaseResultRecord
         {
-            suspectId = suspectId,
-            verdict = _pending,
-            week = currentWeek,
-            justificationScore = justificationScore
+            caseId = caseSO.caseId,
+            result = result,
+            accusedPersonId = accusedPersonId,
+            caseNumber = _state.CurrentCase
         });
+
+        // Track escaped criminals
+        if (result == CaseResult.WrongArrest || result == CaseResult.WeakCase)
+        {
+            if (!string.IsNullOrEmpty(caseSO.trueCulpritId))
+                _save.Data.escapedCriminals.Add(caseSO.trueCulpritId);
+        }
+
+        // Press penalty for unsolved cases
+        if (result == CaseResult.Unsolved)
+        {
+            _state.AddPressPenalty(1);
+        }
+
         _save.Save();
+    }
 
-        // Reset pressure for next week
-        var pressure = ServiceLocator.Get<PressureService>();
-        if (pressure != null) pressure.ResetForWeek();
-
-        _pending = VerdictType.None;
+    public void CommitUnsolved(CaseSO caseSO)
+    {
+        CommitAccusation(caseSO, CaseResult.Unsolved, null);
     }
 }

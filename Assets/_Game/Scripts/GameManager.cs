@@ -1,18 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-
-public enum GameScreen
-{
-    MainMenu,
-    Outcome,
-    Dossier,
-    Evidence,
-    Testimony,
-    Interrogation,
-    Briefing,
-    Ending
-}
 
 public class GameManager : MonoBehaviour
 {
@@ -21,11 +7,10 @@ public class GameManager : MonoBehaviour
     SaveService _save;
     GameStateService _state;
     CaseService _cases;
-    DailyChoiceService _choices;
+    ActionService _actions;
+    DeductionService _deduction;
     VerdictService _verdicts;
     ConsequenceService _conseq;
-    NoteService _notes;
-    PressureService _pressure;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoBootstrap()
@@ -51,18 +36,18 @@ public class GameManager : MonoBehaviour
         _state = new GameStateService(_save);
         _cases = new CaseService();
         _conseq = new ConsequenceService(_save);
-        _choices = new DailyChoiceService(_save);
-        _verdicts = new VerdictService(_conseq, _save);
-        _notes = new NoteService(_save);
-        _pressure = new PressureService(_save);
+        _actions = new ActionService(_save, _state);
+        _deduction = new DeductionService(_save);
+        _verdicts = new VerdictService(_conseq, _save, _state);
+
         ServiceLocator.Register(_save);
         ServiceLocator.Register(_state);
         ServiceLocator.Register(_cases);
-        ServiceLocator.Register(_choices);
+        ServiceLocator.Register(_actions);
+        ServiceLocator.Register(_deduction);
         ServiceLocator.Register(_conseq);
         ServiceLocator.Register(_verdicts);
-        ServiceLocator.Register(_notes);
-        ServiceLocator.Register(_pressure);
+
         _cases.LoadAll();
     }
 
@@ -70,23 +55,30 @@ public class GameManager : MonoBehaviour
     {
         _save.DeleteSave();
         _state = new GameStateService(_save);
-        _choices = new DailyChoiceService(_save);
         _conseq = new ConsequenceService(_save);
-        _verdicts = new VerdictService(_conseq, _save);
-        _notes = new NoteService(_save);
-        _pressure = new PressureService(_save);
+        _actions = new ActionService(_save, _state);
+        _deduction = new DeductionService(_save);
+        _verdicts = new VerdictService(_conseq, _save, _state);
+
         ServiceLocator.Register(_state);
-        ServiceLocator.Register(_choices);
+        ServiceLocator.Register(_actions);
+        ServiceLocator.Register(_deduction);
         ServiceLocator.Register(_conseq);
         ServiceLocator.Register(_verdicts);
-        ServiceLocator.Register(_notes);
-        ServiceLocator.Register(_pressure);
-        _cases.LoadWeek(1);
+
+        _cases.LoadCase(1);
+        if (_cases.ActiveCase != null)
+        {
+            _state.InitCase(_cases.ActiveCase.totalMoves);
+            _deduction.SetActiveCase(_cases.ActiveCase);
+        }
     }
 
     public void ContinueGame()
     {
-        _cases.LoadWeek(_state.CurrentWeek);
+        _cases.LoadCase(_state.CurrentCase);
+        if (_cases.ActiveCase != null)
+            _deduction.SetActiveCase(_cases.ActiveCase);
     }
 
     public bool HasSave() => _save.HasSave();

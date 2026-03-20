@@ -76,7 +76,7 @@
 
 .panel-scroll {
     max-height: 85%;
-    overflow: hidden;
+    flex-shrink: 1;
 }
 
 /* ─── TYPOGRAPHY ─── */
@@ -713,4 +713,194 @@ Scroller #unity-tracker {
 
 Scroller RepeatButton {
     display: none;
+}
+
+/* ═══════════════════════════════════════
+   MOVES COUNTER (top-right HUD)
+   ═══════════════════════════════════════ */
+.moves-counter {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 16px;
+    -unity-font-style: bold;
+    color: var(--text-amber);
+    letter-spacing: 2px;
+    padding: 6px 12px;
+    background-color: rgba(4, 8, 4, 0.85);
+    border-width: 1px;
+    border-color: var(--border-main);
+}
+
+/* ═══════════════════════════════════════
+   COMMAND CENTER
+   ═══════════════════════════════════════ */
+.action-btn {
+    width: 100%;
+    height: auto;
+    min-height: 60px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    -unity-font-style: bold;
+    background-color: var(--btn-bg);
+    color: var(--text-main);
+    border-radius: 0;
+    border-width: 2px;
+    border-color: var(--border-main);
+    white-space: normal;
+    -unity-text-align: middle-left;
+}
+
+.action-btn:hover {
+    background-color: var(--btn-hover);
+    color: var(--text-bright);
+    border-color: var(--border-bright);
+}
+
+.action-btn:disabled {
+    opacity: 0.35;
+}
+
+.action-cost {
+    font-size: 11px;
+    color: var(--text-amber);
+    -unity-font-style: bold;
+    margin-left: 8px;
+}
+
+/* ═══════════════════════════════════════
+   DEDUCTION BOARD
+   ═══════════════════════════════════════ */
+.deduction-chain {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin: 12px 0;
+}
+
+.deduction-slot {
+    width: 160px;
+    min-height: 80px;
+    margin: 0 6px;
+    padding: 8px;
+    background-color: rgba(10, 20, 10, 0.9);
+    border-width: 2px;
+    border-color: var(--border-main);
+    align-items: center;
+    justify-content: center;
+}
+
+.deduction-slot-filled {
+    border-color: var(--text-bright);
+    background-color: rgba(15, 35, 15, 0.95);
+}
+
+.deduction-slot-label {
+    font-size: 10px;
+    -unity-font-style: bold;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    -unity-text-align: middle-center;
+    margin-bottom: 4px;
+}
+
+.deduction-slot-content {
+    font-size: 12px;
+    color: var(--text-bright);
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+.deduction-arrow {
+    font-size: 20px;
+    color: var(--text-dim);
+    -unity-text-align: middle-center;
+}
+
+.fragment-card {
+    width: 140px;
+    min-height: 50px;
+    margin: 3px;
+    padding: 6px;
+    font-size: 11px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    background-color: rgba(15, 25, 15, 0.9);
+    border-width: 2px;
+    border-radius: 0;
+    white-space: normal;
+}
+
+.fragment-motive {
+    border-color: rgb(200, 80, 80);
+    color: rgb(240, 120, 120);
+}
+
+.fragment-opportunity {
+    border-color: rgb(80, 150, 200);
+    color: rgb(120, 190, 240);
+}
+
+.fragment-evidence {
+    border-color: rgb(200, 180, 50);
+    color: rgb(240, 220, 80);
+}
+
+.fragment-suspect {
+    border-color: rgb(180, 80, 200);
+    color: rgb(220, 120, 240);
+}
+
+.fragment-card-selected {
+    background-color: rgba(40, 80, 40, 0.95);
+    border-color: rgb(80, 255, 80);
+    color: rgb(80, 255, 80);
+}
+
+.fragment-card-placed {
+    opacity: 0.4;
+}
+
+.fragment-card:hover {
+    background-color: rgba(25, 45, 25, 0.95);
+}
+
+/* ═══════════════════════════════════════
+   ACCUSATION / CASE RESULT
+   ═══════════════════════════════════════ */
+.result-correct {
+    border-left-width: 4px;
+    border-left-color: rgb(60, 200, 60);
+}
+
+.result-wrong {
+    border-left-width: 4px;
+    border-left-color: rgb(220, 50, 50);
+}
+
+.result-unsolved {
+    border-left-width: 4px;
+    border-left-color: rgb(150, 150, 150);
+}
+
+.result-weak {
+    border-left-width: 4px;
+    border-left-color: rgb(220, 180, 50);
+}
+
+/* ═══════════════════════════════════════
+   PRESS PRESSURE INDICATOR
+   ═══════════════════════════════════════ */
+.press-bar {
+    width: 200px;
+    height: 8px;
+    background-color: rgba(20, 20, 25, 0.8);
+    border-width: 1px;
+    border-color: var(--border-main);
+}
+
+.press-bar-fill {
+    height: 8px;
+    background-color: rgb(220, 50, 40);
 }

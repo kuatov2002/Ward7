@@ -1,9 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// Adds idle animations to desk objects: hover scale, phone vibrate, glow pulse.
-/// Attach to any DeskObject.
-/// </summary>
 public class DeskObjectAnimator : MonoBehaviour
 {
     public enum AnimationType { None, PhoneVibrate, GlowPulse, StampReady }
@@ -33,15 +29,6 @@ public class DeskObjectAnimator : MonoBehaviour
         switch (animType)
         {
             case AnimationType.PhoneVibrate:
-                // Stop vibrating once the call is made
-                var choices = ServiceLocator.Get<DailyChoiceService>();
-                var state = ServiceLocator.Get<GameStateService>();
-                if (choices != null && state != null &&
-                    choices.IsChosen(state.CurrentWeek, ChoiceType.Contact))
-                {
-                    transform.localPosition = _basePos;
-                    break;
-                }
                 AnimatePhoneVibrate();
                 break;
             case AnimationType.GlowPulse:
@@ -57,18 +44,13 @@ public class DeskObjectAnimator : MonoBehaviour
     {
         _isHighlighted = on;
         if (on)
-        {
             transform.localScale = _baseScale * 1.08f;
-        }
         else
-        {
             transform.localScale = _baseScale;
-        }
     }
 
     void AnimatePhoneVibrate()
     {
-        // Quick short vibrations
         float vibrate = Mathf.Sin(_time * 30f) * 0.003f * Mathf.Abs(Mathf.Sin(_time * 2f));
         transform.localPosition = _basePos + new Vector3(vibrate, 0f, vibrate * 0.5f);
     }
@@ -76,13 +58,12 @@ public class DeskObjectAnimator : MonoBehaviour
     void AnimateGlowPulse()
     {
         if (_renderer == null) return;
-        float pulse = (Mathf.Sin(_time * 2f) + 1f) * 0.5f; // 0 to 1
+        float pulse = (Mathf.Sin(_time * 2f) + 1f) * 0.5f;
         _renderer.material.color = Color.Lerp(_baseColor, _baseColor * 1.4f, pulse * 0.3f);
     }
 
     void AnimateStampReady()
     {
-        // Gentle bob up and down
         float bob = Mathf.Sin(_time * 1.5f) * 0.005f;
         transform.localPosition = _basePos + new Vector3(0f, bob, 0f);
     }
