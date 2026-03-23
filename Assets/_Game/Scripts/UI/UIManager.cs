@@ -56,7 +56,7 @@ public class UIManager : MonoBehaviour
         _transitionText = _root.Q<Label>("transition-text");
 
         string[] panelNames = {
-            "main-menu-panel", "case-briefing-panel", "command-center-panel",
+            "main-menu-panel", "case-briefing-panel", "case-dossier-panel", "command-center-panel",
             "interrogation-panel", "location-panel", "database-panel",
             "confrontation-panel", "deduction-panel", "accusation-panel",
             "case-result-panel", "ending-panel"

@@ -228,31 +228,32 @@ public class SceneSetup : MonoBehaviour
         var parent = new GameObject("DeskObjects");
         var officeCtrl = parent.AddComponent<OfficeController>();
         var objects = new System.Collections.Generic.List<DeskObject>();
-
-        // 1. Case folder — opens command center (main investigation hub)
+ 
+        // 1. Папка дела — ДОСЬЕ: краткое резюме дела, список фигурантов, сколько ходов осталось
+        //    Это НЕ командный центр — это справочник, открывается бесплатно
         var dossier = Box("CaseFolder", new Vector3(-0.8f, 0.78f, 0.7f),
             new Vector3(0.25f, 0.03f, 0.35f), new Color(0.5f, 0.4f, 0.15f));
         dossier.transform.SetParent(parent.transform);
         var dossierObj = dossier.AddComponent<DeskObject>();
-        dossierObj.panelName = "command-center-panel";
-        dossierObj.displayName = "Папка дела";
+        dossierObj.panelName = "case-dossier-panel";   // новая панель-справочник
+        dossierObj.displayName = "Досье дела (бесплатно)";
         var dossierAnim = dossier.AddComponent<DeskObjectAnimator>();
         dossierAnim.animType = DeskObjectAnimator.AnimationType.GlowPulse;
         objects.Add(dossierObj);
-
-        // 2. Phone — opens database queries
+ 
+        // 2. Телефон — ТОЛЬКО база данных
         var phoneBase = Cyl("Phone", new Vector3(-0.45f, 0.76f, 0.4f), new Vector3(0.15f, 0.02f, 0.15f), PhoneBlack);
         var phoneHandset = Box("PhoneHandset", new Vector3(-0.45f, 0.8f, 0.4f), new Vector3(0.04f, 0.02f, 0.18f), PhoneBlack);
         phoneHandset.transform.SetParent(phoneBase.transform);
         phoneBase.transform.SetParent(parent.transform);
         var phoneObj = phoneBase.AddComponent<DeskObject>();
         phoneObj.panelName = "database-panel";
-        phoneObj.displayName = "Телефон — База данных";
+        phoneObj.displayName = "Телефон — пробить по базе";
         var phoneAnim = phoneBase.AddComponent<DeskObjectAnimator>();
         phoneAnim.animType = DeskObjectAnimator.AnimationType.PhoneVibrate;
         objects.Add(phoneObj);
-
-        // 3. Computer monitor — opens command center (alternate access)
+ 
+        // 3. Монитор — КОМАНДНЫЙ ЦЕНТР (выбор действий расследования)
         var monitorScreen = Box("Monitor", new Vector3(0.35f, 0.98f, 1.0f),
             new Vector3(0.5f, 0.32f, 0.03f), MonitorGray);
         var mStand = Cyl("MonitorStand", new Vector3(0.35f, 0.77f, 1.0f), new Vector3(0.06f, 0.03f, 0.06f), Metal);
@@ -264,29 +265,29 @@ public class SceneSetup : MonoBehaviour
         monitorScreen.transform.SetParent(parent.transform);
         var monObj = monitorScreen.AddComponent<DeskObject>();
         monObj.panelName = "command-center-panel";
-        monObj.displayName = "Монитор — Командный центр";
+        monObj.displayName = "Монитор — действия расследования";
         objects.Add(monObj);
-
-        // 4. Verdict stamp — opens accusation panel
+ 
+        // 4. Печать — ОБВИНЕНИЕ (только когда цепочка собрана)
         var stamp = Cyl("Stamp", new Vector3(0.75f, 0.78f, 0.6f),
             new Vector3(0.08f, 0.04f, 0.08f), RedDark);
         stamp.transform.SetParent(parent.transform);
         var stampObj = stamp.AddComponent<DeskObject>();
         stampObj.panelName = "accusation-panel";
-        stampObj.displayName = "Печать — Обвинение";
+        stampObj.displayName = "Печать — предъявить обвинение";
         var stampAnim = stamp.AddComponent<DeskObjectAnimator>();
         stampAnim.animType = DeskObjectAnimator.AnimationType.StampReady;
         objects.Add(stampObj);
-
-        // 5. Deduction board on wall
+ 
+        // 5. Доска на стене — ДЕДУКЦИЯ
         var boardTrigger = Box("BoardTrigger", new Vector3(-1.8f, 1.5f, 2.43f),
             new Vector3(1.2f, 0.8f, 0.04f), new Color(0.55f, 0.4f, 0.2f));
         boardTrigger.transform.SetParent(parent.transform);
         var boardObj = boardTrigger.AddComponent<DeskObject>();
         boardObj.panelName = "deduction-panel";
-        boardObj.displayName = "Доска дедукции";
+        boardObj.displayName = "Доска — собрать цепочку дедукции";
         objects.Add(boardObj);
-
+ 
         officeCtrl.deskObjects = objects.ToArray();
     }
 
@@ -299,10 +300,11 @@ public class SceneSetup : MonoBehaviour
         uiDoc.visualTreeAsset = gameUIAsset;
         if (gameUIStyles != null)
             uiDoc.rootVisualElement.styleSheets.Add(gameUIStyles);
-
+ 
         uiGo.AddComponent<UIManager>();
         uiGo.AddComponent<MainMenuUI>();
         uiGo.AddComponent<CaseBriefingUI>();
+        uiGo.AddComponent<CaseDossierUI>();       // ← НОВОЕ: панель-справочник
         uiGo.AddComponent<CommandCenterUI>();
         uiGo.AddComponent<InterrogationUI>();
         uiGo.AddComponent<LocationInspectUI>();

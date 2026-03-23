@@ -5,7 +5,13 @@
     <ui:VisualElement name="overlay" class="overlay hidden">
         <ui:VisualElement name="main-menu-panel" class="panel panel-fullscreen hidden" />
         <ui:VisualElement name="case-briefing-panel" class="panel panel-center hidden" />
+
+        <!-- ДОСЬЕ: справочник дела, бесплатно (папка на столе) -->
+        <ui:VisualElement name="case-dossier-panel" class="panel panel-scroll hidden" />
+
+        <!-- КОМАНДНЫЙ ЦЕНТР: выбор действий расследования (монитор) -->
         <ui:VisualElement name="command-center-panel" class="panel panel-scroll hidden" />
+
         <ui:VisualElement name="interrogation-panel" class="panel panel-scroll hidden" />
         <ui:VisualElement name="location-panel" class="panel panel-scroll hidden" />
         <ui:VisualElement name="database-panel" class="panel panel-scroll hidden" />
