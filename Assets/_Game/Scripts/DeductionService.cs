@@ -1,26 +1,28 @@
 using System.Collections.Generic;
 using System.Linq;
 
+/// <summary>
+/// Free-form deduction: player selects a suspect + up to 3 supporting fragments.
+/// Validation checks if among selected fragments there is a valid motive,
+/// opportunity, and evidence — without telling the player WHICH is which.
+/// </summary>
 public class DeductionService
 {
     readonly SaveService _save;
-
-    public DeductionService(SaveService save)
-    {
-        _save = save;
-    }
-
     CaseSO _activeCase;
 
-    public void SetActiveCase(CaseSO caseSO) => _activeCase = caseSO;
+    public DeductionService(SaveService save) => _save = save;
 
+    public void SetActiveCase(CaseSO c) => _activeCase = c;
+
+    // ── Fragment revelation ──
     public void RevealFragment(string fragmentId)
     {
         if (string.IsNullOrEmpty(fragmentId)) return;
         if (_save.Data.revealedFragments.Contains(fragmentId)) return;
         _save.Data.revealedFragments.Add(fragmentId);
 
-        // Auto-reveal suspect fragments for the related person
+        // Auto-reveal suspect fragments for related person
         if (_activeCase?.fragments != null)
         {
             var frag = _activeCase.fragments.FirstOrDefault(f => f.fragmentId == fragmentId);
@@ -31,119 +33,92 @@ public class DeductionService
                     if (sf.fragmentType == FragmentType.Suspect
                         && sf.relatedPersonId == frag.relatedPersonId
                         && !_save.Data.revealedFragments.Contains(sf.fragmentId))
-                    {
                         _save.Data.revealedFragments.Add(sf.fragmentId);
-                    }
                 }
             }
         }
-
         _save.Save();
     }
 
     public List<string> GetRevealedFragments() => _save.Data.revealedFragments;
+    public bool IsRevealed(string id)           => _save.Data.revealedFragments.Contains(id);
 
-    public bool IsRevealed(string fragmentId) =>
-        _save.Data.revealedFragments.Contains(fragmentId);
-
-    // Chain management
-    public void PlaceOnChain(FragmentType slot, string fragmentId)
+    // ── Accusation ──
+    public void SetAccused(string personId)
     {
-        switch (slot)
-        {
-            case FragmentType.Motive:
-                _save.Data.chainMotive = fragmentId;
-                break;
-            case FragmentType.Opportunity:
-                _save.Data.chainOpportunity = fragmentId;
-                break;
-            case FragmentType.Evidence:
-                _save.Data.chainEvidence = fragmentId;
-                break;
-            case FragmentType.Suspect:
-                _save.Data.chainSuspect = fragmentId;
-                break;
-        }
+        _save.Data.accusedPersonId = personId;
         _save.Save();
     }
 
-    public void RemoveFromChain(FragmentType slot)
+    public string GetAccused() => _save.Data.accusedPersonId;
+
+    public void SetAccusationFragments(List<string> fragmentIds)
     {
-        PlaceOnChain(slot, "");
+        _save.Data.accusationFragments = new List<string>(fragmentIds);
+        _save.Save();
     }
 
-    public string GetChainSlot(FragmentType slot)
-    {
-        return slot switch
-        {
-            FragmentType.Motive => _save.Data.chainMotive,
-            FragmentType.Opportunity => _save.Data.chainOpportunity,
-            FragmentType.Evidence => _save.Data.chainEvidence,
-            FragmentType.Suspect => _save.Data.chainSuspect,
-            _ => ""
-        };
-    }
+    public List<string> GetAccusationFragments() => _save.Data.accusationFragments ?? new();
 
-    public bool IsChainComplete()
-    {
-        return !string.IsNullOrEmpty(_save.Data.chainMotive)
-            && !string.IsNullOrEmpty(_save.Data.chainOpportunity)
-            && !string.IsNullOrEmpty(_save.Data.chainEvidence)
-            && !string.IsNullOrEmpty(_save.Data.chainSuspect);
-    }
+    public bool IsAccusationReady() =>
+        !string.IsNullOrEmpty(_save.Data.accusedPersonId) &&
+        _save.Data.accusationFragments?.Count == 3;
 
-    public CaseResult ValidateChain(CaseSO caseSO)
-    {
-        if (!IsChainComplete())
-            return CaseResult.Unsolved;
-
-        // A slot is correct if the placed fragment has isTrue == true for its type
-        bool motiveCorrect = IsFragmentTrue(caseSO, _save.Data.chainMotive);
-        bool oppCorrect = IsFragmentTrue(caseSO, _save.Data.chainOpportunity);
-        bool evidCorrect = IsFragmentTrue(caseSO, _save.Data.chainEvidence);
-        bool suspCorrect = IsFragmentTrue(caseSO, _save.Data.chainSuspect);
-
-        int correctCount = (motiveCorrect ? 1 : 0) + (oppCorrect ? 1 : 0)
-                         + (evidCorrect ? 1 : 0) + (suspCorrect ? 1 : 0);
-
-        if (correctCount == 4)
-            return CaseResult.CorrectArrest;
-
-        if (suspCorrect && correctCount >= 2)
-            return CaseResult.WeakCase; // right person, weak evidence
-
-        return CaseResult.WrongArrest;
-    }
-
-    static bool IsFragmentTrue(CaseSO caseSO, string fragmentId)
-    {
-        if (string.IsNullOrEmpty(fragmentId) || caseSO.fragments == null)
-            return false;
-        var frag = System.Array.Find(caseSO.fragments, f => f.fragmentId == fragmentId);
-        return frag != null && frag.isTrue;
-    }
-
+    // ── Validation ──
     /// <summary>
-    /// Get the person ID from the suspect fragment placed in the chain.
-    /// Returns null if no suspect fragment is placed.
+    /// Validates the free-form accusation.
+    /// Looks for motive / opportunity / evidence among the 3 selected fragments,
+    /// checking isTrue for each type independently.
     /// </summary>
-    public string GetAccusedPersonId(CaseSO caseSO)
+    public CaseResult ValidateAccusation(CaseSO c)
     {
-        string suspFragId = _save.Data.chainSuspect;
-        if (string.IsNullOrEmpty(suspFragId) || caseSO.fragments == null)
-            return null;
+        if (!IsAccusationReady()) return CaseResult.Unsolved;
+        if (c?.fragments == null) return CaseResult.Unsolved;
 
-        var frag = caseSO.fragments.FirstOrDefault(f => f.fragmentId == suspFragId);
-        return frag?.relatedPersonId;
+        string accused     = _save.Data.accusedPersonId;
+        var    selected    = _save.Data.accusationFragments;
+
+        // Is the correct person accused?
+        bool correctPerson = accused == c.trueCulpritId;
+
+        // Among selected fragments, count how many are "true" for their type
+        // (i.e., they genuinely constitute motive/opportunity/evidence for the true culprit)
+        int correctFragments = selected.Count(fid => {
+            var frag = c.fragments.FirstOrDefault(f => f.fragmentId == fid);
+            return frag != null && frag.isTrue;
+        });
+
+        // Determine result
+        if (correctPerson && correctFragments == 3) return CaseResult.CorrectArrest;
+        if (correctPerson && correctFragments >= 2) return CaseResult.WeakCase;
+        if (!correctPerson)                          return CaseResult.WrongArrest;
+
+        return CaseResult.WeakCase;
     }
+
+    // ── Compatibility shims (used by old code paths) ──
+    [System.Obsolete("Use free-form accusation instead")]
+    public void PlaceOnChain(FragmentType slot, string fragmentId) { }
+    [System.Obsolete]
+    public string GetChainSlot(FragmentType slot) => "";
+    [System.Obsolete]
+    public bool IsChainComplete() => IsAccusationReady();
+    [System.Obsolete]
+    public CaseResult ValidateChain(CaseSO c) => ValidateAccusation(c);
+    [System.Obsolete]
+    public string GetAccusedPersonId(CaseSO c) => GetAccused();
 
     public void ResetChain()
     {
-        _save.Data.chainMotive = "";
-        _save.Data.chainOpportunity = "";
-        _save.Data.chainEvidence = "";
-        _save.Data.chainSuspect = "";
+        _save.Data.accusedPersonId      = "";
+        _save.Data.accusationFragments  = new List<string>();
         _save.Data.revealedFragments.Clear();
+        _save.Data.physicalFragments.Clear();
+        _save.Data.resolvedContradictions.Clear();
+        _save.Data.askedQuestions.Clear();
+        _save.Data.inspectedZones.Clear();
+        _save.Data.madeQueries.Clear();
+        _save.Data.doneConfrontations.Clear();
         _save.Save();
     }
 }
